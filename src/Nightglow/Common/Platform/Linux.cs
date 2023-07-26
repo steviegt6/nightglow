@@ -13,13 +13,18 @@ using Nightglow.Common.Instances;
 namespace Nightglow.Common.Platform;
 
 public class Linux : IPlatform {
+    private string winePath => Path.Combine(DataPath(), "wine");
+
     private void SetWineEnv(string path) {
-        Environment.SetEnvironmentVariable("WINEPREFIX", path);
+        Environment.SetEnvironmentVariable("WINEPREFIX", winePath);
         Environment.SetEnvironmentVariable("WINEARCH", "win64");
     }
 
     public async Task ConfigureInstance(Instance instance) {
         if (instance.WindowsOnly) {
+            if (Directory.Exists(winePath))
+                return;
+
             SetWineEnv(Path.Combine(instance.InstancePath, "wine"));
 
             var proc = new Process {
