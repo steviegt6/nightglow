@@ -9,7 +9,7 @@ namespace Nightglow.Common.Platform;
 public interface IPlatform {
     public string DataPath();
     /// <summary>
-    /// On platforms making use of wine for Windows-only instances, returns a path with Z: at the front. Does nothing on Windows.
+    ///     On platforms making use of wine for Windows-only instances, returns a path with Z: at the front. Does nothing on Windows.
     /// </summary>
     public void DataPathIL(ModuleDefinition md, ILCursor c, string mscorlibPath);
     public string MakeWinePath(string path);
