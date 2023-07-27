@@ -5,7 +5,7 @@ using CliFx.Infrastructure;
 namespace Nightglow.Commands;
 
 /// <summary>
-/// The main (default) command, which launches into the Nightglow GUI.
+///     The main (default) command, which launches into the Nightglow GUI.
 /// </summary>
 [Command]
 public sealed class MainCommand : BaseCommand {
