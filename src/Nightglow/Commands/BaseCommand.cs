@@ -6,14 +6,14 @@ using CliFx.Infrastructure;
 namespace Nightglow.Commands;
 
 /// <summary>
-///     The base command, which all commands inherit from. Contains some
-///     universal options.
+/// The base command, which all commands inherit from. Contains some
+/// universal options.
 /// </summary>
 public abstract class BaseCommand : ICommand {
     /// <summary>
-    ///     Whether to suppress message boxes and select default prompt options.
-    ///     Designed to ignore user input in environments where the user is not
-    ///     there.
+    /// Whether to suppress message boxes and select default prompt options.
+    /// Designed to ignore user input in environments where the user is not
+    /// there.
     /// </summary>
     [CommandOption("quiet", 'q', Description = "Whether to suppress message boxes and select default prompt options.")]
     public bool Quiet { get; set; }
