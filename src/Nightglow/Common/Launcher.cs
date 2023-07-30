@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
@@ -32,10 +31,17 @@ public abstract class Launcher {
             var infoFile = Path.Combine(directory, "nightglow.json");
 
             if (!File.Exists(infoFile))
-                throw new Exception($"Instance {directory} does not contain nightglow.json");
+                /* throw new Exception($"Instance {directory} does not contain nightglow.json"); */
+                ; // TODO: Some kind of actual logging for broken instances
             else {
                 var info = JsonConvert.DeserializeObject<InstanceInfo>(File.ReadAllText(infoFile));
-                Instances.Add((Instance)info!.Type.GetConstructor(BindingFlags.Public | BindingFlags.Instance, new Type[] { typeof(string), typeof(InstanceInfo) })!.Invoke(new object[] { directory, (object)info }));
+                if (info == null)
+                    continue;
+
+                var instance = Activator.CreateInstance(info!.Type, new object[] { directory, (object)info });
+                if (instance == null)
+                    continue;
+                Instances.Add((Instance)instance);
             }
         }
     }
