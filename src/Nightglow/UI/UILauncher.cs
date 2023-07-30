@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Threading;
 using Gtk;
@@ -9,6 +10,7 @@ namespace Nightglow.UI;
 public class UILauncher : Launcher {
     public Gtk.Application Application = null!;
     public Window MainWindow = null!; // This could probably just be combined into one class with UILauncher...
+    private readonly ManualResetEvent ProgressDiaglogEvent = new ManualResetEvent(false); // MRE to prevent NewProgressDialog from returning before the enqueued main thread action finishes
 
     // This is kind of a hack. I shouldn't need to do this. Someone find a better way to do this.
     // The reason why I can't just pass it in via a constructor is because I need to construct it before creating
@@ -30,19 +32,30 @@ public class UILauncher : Launcher {
     public override IProgressDialog NewProgressDialog(string title, string header, string text, IEnumerable<DialogOption> opts) {
         IProgressDialog? dialog = null;
 
-        if (Thread.CurrentThread.ManagedThreadId != 1) {
+        if (Environment.CurrentManagedThreadId != 1) {
+            ProgressDiaglogEvent.Reset();
+
             ExecuteInMainContext(() => {
                 dialog = new UIProgressDialog(Application, MainWindow);
                 dialog.Initialize(title, header, text, opts);
+
+                // Signal that we have instantiated and initialized the dialog
+                ProgressDiaglogEvent.Set();
             });
 
-            while (dialog == null); // Lmao?
+            // Wait for ProgressDiaglogEvent.Set to be called
+            ProgressDiaglogEvent.WaitOne();
+
+            // Sanity check
+            if (dialog == null) {
+                throw new Exception();
+            }
         }
         else {
             dialog = new UIProgressDialog(Application, MainWindow);
             dialog.Initialize(title, header, text, opts);
         }
 
-        return dialog;
+        return dialog!;
     }
 }
