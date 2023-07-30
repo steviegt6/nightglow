@@ -46,7 +46,34 @@ public abstract class Launcher {
         }
     }
 
+    /// <summary>
+    /// Executes a delegate in the main GTK context.
+    /// Blocks until the action has completed.
+    /// </summary>
+    /// <param name="action">the delegate to be executed</param>
     public static void ExecuteInMainContext(Action action) {
+        using ManualResetEventSlim resetEvent = new ManualResetEventSlim(false);
+
+        if (Context != null)
+            Context.Post(_ => {
+                action();
+                resetEvent.Set();
+            }, null);
+        else
+            Task.Factory.StartNew(() => {
+                action();
+                resetEvent.Set();
+            });
+
+        resetEvent.Wait();
+    }
+
+    /// <summary>
+    /// Executes a delegate in the main GTK context.
+    /// Does not block.
+    /// </summary>
+    /// <param name="action">the delegate to be executed</param>
+    public static void ExecuteInMainContextNonBlocking(Action action) {
         if (Context != null)
             Context.Post(_ => action(), null);
         else

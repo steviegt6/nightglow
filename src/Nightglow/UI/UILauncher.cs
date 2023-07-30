@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Threading;
 using Gtk;
@@ -30,13 +31,15 @@ public class UILauncher : Launcher {
     public override IProgressDialog NewProgressDialog(string title, string header, string text, IEnumerable<DialogOption> opts) {
         IProgressDialog? dialog = null;
 
-        if (Thread.CurrentThread.ManagedThreadId != 1) {
+        if (Environment.CurrentManagedThreadId != 1) {
             ExecuteInMainContext(() => {
                 dialog = new UIProgressDialog(Application, MainWindow);
                 dialog.Initialize(title, header, text, opts);
             });
 
-            while (dialog == null); // Lmao?
+            if (dialog == null) {
+                throw new Exception();
+            }
         }
         else {
             dialog = new UIProgressDialog(Application, MainWindow);
