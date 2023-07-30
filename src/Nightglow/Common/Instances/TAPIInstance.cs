@@ -1,4 +1,6 @@
 using System.Runtime.Versioning;
+using System.Threading.Tasks;
+using Nightglow.Common.Dialogs;
 
 namespace Nightglow.Common.Instances;
 
@@ -13,7 +15,7 @@ public class TAPIInstance : Instance, ICreateInstance {
     public override string WindowsExecutable => throw new System.NotImplementedException();
 
     [RequiresPreviewFeatures]
-    public static Instance Create(string name) {
+    public static async Task<Instance> Create(IProgressDialog dialog, string name) {
         throw new System.NotImplementedException();
     }
 

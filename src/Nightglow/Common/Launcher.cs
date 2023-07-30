@@ -3,13 +3,14 @@ using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
 using Newtonsoft.Json;
+using Nightglow.Common.Dialogs;
 using Nightglow.Common.Instances;
 using Nightglow.Common.Platform;
 using static Nightglow.Common.Instances.Instance;
 
 namespace Nightglow.Common;
 
-public class Launcher {
+public abstract class Launcher {
     public static IPlatform Platform { get; }
     public static string InstancesPath => Path.Combine(Platform.DataPath(), "instances");
     public List<Instance> Instances { get; set; }
@@ -19,6 +20,7 @@ public class Launcher {
     }
 
     public Launcher() {
+        Console.WriteLine("launcher ctor");
         Directory.CreateDirectory(Platform.DataPath());
         Directory.CreateDirectory(InstancesPath);
 
@@ -35,6 +37,10 @@ public class Launcher {
             }
         }
     }
+
+    public abstract IConfirmationDialog NewConfirmationDialog(string title, string text, IEnumerable<DialogOption> opts);
+
+    public abstract IProgressDialog NewProgressDialog(string title, string header, string text, IEnumerable<DialogOption> opts);
 
     private static IPlatform GetPlatform() {
         if (OperatingSystem.IsWindows())

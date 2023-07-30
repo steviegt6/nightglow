@@ -3,11 +3,13 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Threading;
 using System.Threading.Tasks;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 using Mono.Cecil.Rocks;
 using MonoMod.Cil;
+using Nightglow.Common.Dialogs;
 using Nightglow.Common.Instances;
 
 namespace Nightglow.Common.Platform;
@@ -15,12 +17,37 @@ namespace Nightglow.Common.Platform;
 public class Linux : IPlatform {
     private string winePath => Path.Combine(DataPath(), "wine");
 
+    public string DataPath() {
+        var xdg = Environment.GetEnvironmentVariable("XDG_DATA_HOME");
+
+        if (!string.IsNullOrEmpty(xdg))
+            return Path.Combine(xdg, "nightglow");
+        else
+            return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Personal), ".local", "share", "nightglow");
+    }
+
+    public void DataPathIL(ModuleDefinition md, ILCursor c, string mscorlibPath) {
+        var mscorlib = ModuleDefinition.ReadModule(mscorlibPath);
+        c.Emit(OpCodes.Call, md.ImportReference(mscorlib.GetTypes().First(t => t.FullName == "System.Environment").GetMethods().First(m => m.Name == "get_CurrentDirectory")));
+        c.Emit(OpCodes.Call, md.ImportReference(mscorlib.GetTypes().First(t => t.FullName == "System.IO.Directory").GetMethods().First(m => m.Name == "GetParent")));
+        c.Emit(OpCodes.Callvirt, md.ImportReference(mscorlib.GetTypes().First(t => t.FullName == "System.IO.FileSystemInfo").GetMethods().First(m => m.Name == "get_FullName")));
+    }
+
+    public void OpenUrl(string url) {
+        Process.Start("xdg-open", url);
+    }
+
+    public void OpenPath(string path) {
+        Process.Start("xdg-open", path);
+    }
+
     private void SetWineEnv(string path) {
         Environment.SetEnvironmentVariable("WINEPREFIX", winePath);
         Environment.SetEnvironmentVariable("WINEARCH", "win64");
     }
 
-    public async Task ConfigureInstance(Instance instance) {
+    public async Task ConfigureInstance(IProgressDialog dialog, Instance instance) {
+        Console.WriteLine("Configure instance: " + Thread.CurrentThread.ManagedThreadId);
         if (instance.WindowsOnly) {
             if (Directory.Exists(winePath))
                 return;
@@ -37,31 +64,41 @@ public class Linux : IPlatform {
                 }
             };
 
-            proc.OutputDataReceived += (sender, args) => { Console.WriteLine(args.Data); };
-            proc.ErrorDataReceived += (sender, args) => { Console.WriteLine("err: " + args.Data); };
+            /* var cancelOpt = new DialogOption("Cancel", "Kills the winetricks installer, removing leftover files", (sender) => { */
+            /*     sender.SetHeader("Undoing winetricks setup"); */
+            /*     sender.SetText("Killing winetricks"); */
+            /*     if (!proc.HasExited) */
+            /*         proc.Kill(true); */
+
+            /*     sender.SetText("Deleting unfinished wine installation at " + winePath); */
+            /*     Directory.Delete(winePath, true); */
+
+            /*     sender.Close(); */
+            /* }); */
+
+
+            void DataRecieved(object sender, DataReceivedEventArgs args) {
+                Console.WriteLine("data recieved: " + Thread.CurrentThread.ManagedThreadId);
+                if (!string.IsNullOrEmpty(args.Data))
+                    dialog.SetText(args.Data);
+            }
+
+            proc.OutputDataReceived += DataRecieved;
+            proc.ErrorDataReceived += DataRecieved;
 
             proc.Start();
             proc.BeginOutputReadLine();
             proc.BeginErrorReadLine();
 
-            // Do some kind of interface for providing the output and result of this command!
-            /* while (!proc.StandardOutput.EndOfStream) { */
-            /*     Console.WriteLine(await proc.StandardOutput.ReadLineAsync()); */
-            /* } */
+            dialog.PulseWhile(100, () => {
+                Console.WriteLine("dialog pulsewhile: " + Thread.CurrentThread.ManagedThreadId);
+                return !proc.HasExited;
+            });
 
             await proc.WaitForExitAsync();
-            Console.WriteLine("Configured instance");
+            dialog.Close();
         }
         // is there anything else to even configure?
-    }
-
-    public string DataPath() {
-        var xdg = Environment.GetEnvironmentVariable("XDG_DATA_HOME");
-
-        if (!string.IsNullOrEmpty(xdg))
-            return Path.Combine(xdg, "nightglow");
-        else
-            return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Personal), ".local", "share", "nightglow");
     }
 
     public Process Launch(Instance instance) {
@@ -86,20 +123,5 @@ public class Linux : IPlatform {
         proc.BeginErrorReadLine();
 
         return proc;
-    }
-
-    public string MakeWinePath(string path) {
-        return Path.Combine("Z:", path);
-    }
-
-    public void OpenUrl(string url) {
-        Process.Start("xdg-open", url);
-    }
-
-    public void DataPathIL(ModuleDefinition md, ILCursor c, string mscorlibPath) {
-        var mscorlib = ModuleDefinition.ReadModule(mscorlibPath);
-        c.Emit(OpCodes.Call, md.ImportReference(mscorlib.GetTypes().First(t => t.FullName == "System.Environment").GetMethods().First(m => m.Name == "get_CurrentDirectory")));
-        c.Emit(OpCodes.Call, md.ImportReference(mscorlib.GetTypes().First(t => t.FullName == "System.IO.Directory").GetMethods().First(m => m.Name == "GetParent")));
-        c.Emit(OpCodes.Callvirt, md.ImportReference(mscorlib.GetTypes().First(t => t.FullName == "System.IO.FileSystemInfo").GetMethods().First(m => m.Name == "get_FullName")));
     }
 }

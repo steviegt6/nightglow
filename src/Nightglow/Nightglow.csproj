@@ -10,7 +10,7 @@
 
     <ItemGroup>
         <PackageReference Include="CliFx" Version="2.3.4" />
-        <PackageReference Include="GirCore.Gtk-4.0" Version="0.3.0" />
+        <PackageReference Include="GirCore.Gtk-4.0" Version="0.4.0" />
         <PackageReference Include="Mono.Cecil" Version="0.11.5" />
         <PackageReference Include="MonoMod.RuntimeDetour" Version="25.0.0" />
         <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />

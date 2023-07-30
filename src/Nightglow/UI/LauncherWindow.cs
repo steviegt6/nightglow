@@ -1,10 +1,13 @@
 using System;
+using System.Threading;
 using Gtk;
+using Nightglow.Common;
+using Nightglow.Common.Dialogs;
 
 namespace Nightglow.UI;
 
 public class LauncherWindow : ApplicationWindow {
-    public LauncherWindow(Gio.Application application) {
+    public LauncherWindow(Application application) {
         var rootBox = new Box { Name = "rootBox" };
         rootBox.SetOrientation(Orientation.Vertical);
         this.SetChild(rootBox);
@@ -15,19 +18,35 @@ public class LauncherWindow : ApplicationWindow {
 
         var ribbonBox = new Box { Name = "ribbonBox" };
         ribbonBox.SetOrientation(Orientation.Horizontal);
-        ribbonBox.SetVexpandSet(true);
         var addInstanceButton = new Button { Label = "Add Instance" };
         addInstanceButton.OnClicked += (Button _, EventArgs _) => {
             var addInstanceWindow = new AddInstanceWindow(application, instancePane, instanceFlow);
+            addInstanceWindow.SetTransientFor(this);
             addInstanceWindow.Show();
         };
         ribbonBox.Append(addInstanceButton);
-        ribbonBox.Append(new Button { Label = "Folders" });
+        var foldersButton = new Button { Name = "foldersButton", Label = "Folders" };
+        ribbonBox.Append(foldersButton);
         ribbonBox.Append(new Button { Label = "Settings" });
 
         var helpButton = new Button { Label = "Help" };
-        helpButton.OnClicked += (Button sender, EventArgs args) => { Common.Launcher.Platform.OpenUrl("https://github.com/steviegt6/terraprisma"); };
+        helpButton.OnClicked += (_, _) => { Launcher.Platform.OpenUrl("https://github.com/steviegt6/terraprisma"); };
         ribbonBox.Append(helpButton);
+
+        Console.WriteLine("making guh: " + Thread.CurrentThread.ManagedThreadId);
+
+        var guh = new Button { Label = "guh" };
+        guh.OnClicked += (_, _) => {
+            Console.WriteLine("guh on clicked: " + Thread.CurrentThread.ManagedThreadId);
+
+            var copt = new DialogOption("cancel", "cancel guh", (sender) => { Console.WriteLine("guh"); });
+            var d = Program.Launcher.NewProgressDialog("guhdialog", "guhheader", "guhtext", new DialogOption[] { copt });
+            d.PulseWhile(100, () => {
+                Console.WriteLine("guh pulsewhile: " + Thread.CurrentThread.ManagedThreadId);
+                return true; });
+        };
+        ribbonBox.Append(guh);
+
         rootBox.Append(ribbonBox);
 
         centerBox.SetOrientation(Orientation.Horizontal);
@@ -47,7 +66,7 @@ public class LauncherWindow : ApplicationWindow {
             instancePane.SetInstance((UIInstance)uiInstance);
         rootBox.Append(centerBox);
 
-        this.Application = (Application)application;
+        this.Application = application;
         this.Title = "Nightglow";
         this.SetDefaultSize(800, 600);
     }

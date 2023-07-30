@@ -2,7 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Threading;
+using System.Threading.Tasks;
 using Gtk;
+using Nightglow.Common.Dialogs;
 using Nightglow.Common.Instances;
 
 namespace Nightglow.UI;
@@ -123,12 +126,18 @@ public class AddInstanceWindow : ApplicationWindow {
             return;
         }
 
-        var instance = (Instance)createInstanceMethods[visibleBox].Invoke(null, new object[] { nameEntry.GetText() })!;
-        Program.Launcher.Instances.Add(instance);
-        var uiInstance = new UIInstance(instance, pane);
-        pane.SetInstance(uiInstance);
-        flow.Append(uiInstance); // Eventually needs to be sorted
+        var cancelOpt = new DialogOption("Cancel", "guh", (sender) => { Console.WriteLine("cancel"); });
+        var dialog = Program.Launcher.NewProgressDialog("Performing first time wine setup", "Wine setup", "Installing xna40", new DialogOption[] { });
 
-        this.Close();
+        Task.Run(async () => {
+            Console.WriteLine("CreateSelectedInstanceAsync Task.Run: " + Thread.CurrentThread.ManagedThreadId);
+            var instance = await (Task<Instance>)createInstanceMethods[visibleBox].Invoke(null, new object[] { dialog, nameEntry.GetText() })!;
+            Program.Launcher.Instances.Add(instance);
+            var uiInstance = new UIInstance(instance, pane);
+            pane.SetInstance(uiInstance);
+            flow.Append(uiInstance); // Eventually needs to be sorted
+
+            this.Close();
+        });
     }
 }
