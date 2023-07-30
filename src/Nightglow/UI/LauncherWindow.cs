@@ -32,21 +32,6 @@ public class LauncherWindow : ApplicationWindow {
         var helpButton = new Button { Label = "Help" };
         helpButton.OnClicked += (_, _) => { Launcher.Platform.OpenUrl("https://github.com/steviegt6/terraprisma"); };
         ribbonBox.Append(helpButton);
-
-        Console.WriteLine("making guh: " + Thread.CurrentThread.ManagedThreadId);
-
-        var guh = new Button { Label = "guh" };
-        guh.OnClicked += (_, _) => {
-            Console.WriteLine("guh on clicked: " + Thread.CurrentThread.ManagedThreadId);
-
-            var copt = new DialogOption("cancel", "cancel guh", (sender) => { Console.WriteLine("guh"); });
-            var d = Program.Launcher.NewProgressDialog("guhdialog", "guhheader", "guhtext", new DialogOption[] { copt });
-            d.PulseWhile(100, () => {
-                Console.WriteLine("guh pulsewhile: " + Thread.CurrentThread.ManagedThreadId);
-                return true; });
-        };
-        ribbonBox.Append(guh);
-
         rootBox.Append(ribbonBox);
 
         centerBox.SetOrientation(Orientation.Horizontal);

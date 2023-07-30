@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Threading;
 using Gtk;
 using Nightglow.Common;
 using Nightglow.Common.Dialogs;
@@ -20,14 +21,28 @@ public class UILauncher : Launcher {
     }
 
     public override IConfirmationDialog NewConfirmationDialog(string title, string text, IEnumerable<DialogOption> opts) {
+        // This will eventually need to be modeled after NewProgressDialog
         var dialog = new UIConfirmationDialog(Application, MainWindow);
         dialog.Initialize(title, text, opts);
         return (IConfirmationDialog)dialog;
     }
 
     public override IProgressDialog NewProgressDialog(string title, string header, string text, IEnumerable<DialogOption> opts) {
-        var dialog = new UIProgressDialog(Application, MainWindow);
-        dialog.Initialize(title, header, text, opts);
+        IProgressDialog? dialog = null;
+
+        if (Thread.CurrentThread.ManagedThreadId != 1) {
+            ExecuteInMainContext(() => {
+                dialog = new UIProgressDialog(Application, MainWindow);
+                dialog.Initialize(title, header, text, opts);
+            });
+
+            while (dialog == null); // Lmao?
+        }
+        else {
+            dialog = new UIProgressDialog(Application, MainWindow);
+            dialog.Initialize(title, header, text, opts);
+        }
+
         return dialog;
     }
 }

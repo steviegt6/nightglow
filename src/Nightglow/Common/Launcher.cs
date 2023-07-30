@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
+using System.Threading;
+using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Nightglow.Common.Dialogs;
 using Nightglow.Common.Instances;
@@ -14,13 +16,13 @@ public abstract class Launcher {
     public static IPlatform Platform { get; }
     public static string InstancesPath => Path.Combine(Platform.DataPath(), "instances");
     public List<Instance> Instances { get; set; }
+    public static SynchronizationContext Context = null!; // If this wasn't set in MainCommand it already threw
 
     static Launcher() {
         Platform = GetPlatform();
     }
 
     public Launcher() {
-        Console.WriteLine("launcher ctor");
         Directory.CreateDirectory(Platform.DataPath());
         Directory.CreateDirectory(InstancesPath);
 
@@ -36,6 +38,13 @@ public abstract class Launcher {
                 Instances.Add((Instance)info!.Type.GetConstructor(BindingFlags.Public | BindingFlags.Instance, new Type[] { typeof(string), typeof(InstanceInfo) })!.Invoke(new object[] { directory, (object)info }));
             }
         }
+    }
+
+    public static void ExecuteInMainContext(Action action) {
+        if (Context != null)
+            Context.Post(_ => action(), null);
+        else
+            Task.Factory.StartNew(action);
     }
 
     public abstract IConfirmationDialog NewConfirmationDialog(string title, string text, IEnumerable<DialogOption> opts);

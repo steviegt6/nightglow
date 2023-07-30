@@ -1,6 +1,9 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading;
+using System.Threading.Tasks;
 using CliFx.Attributes;
 using CliFx.Infrastructure;
+using Nightglow.Common;
 using Nightglow.UI;
 
 namespace Nightglow.Commands;
@@ -17,9 +20,9 @@ public sealed class MainCommand : BaseCommand {
             var window = new LauncherWindow((Gtk.Application)sender);
             window.Show();
             ((UILauncher)Program.Launcher).SetApplicationAndWindow(application, window);
+            Launcher.Context = SynchronizationContext.Current ?? throw new Exception("Unable to get GlibMainLoop"); // This exception should never be hit
         };
         application.RunWithSynchronizationContext();
-
         return default;
     }
 }

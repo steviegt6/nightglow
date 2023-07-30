@@ -46,8 +46,7 @@ public class Linux : IPlatform {
         Environment.SetEnvironmentVariable("WINEARCH", "win64");
     }
 
-    public async Task ConfigureInstance(IProgressDialog dialog, Instance instance) {
-        Console.WriteLine("Configure instance: " + Thread.CurrentThread.ManagedThreadId);
+    public async Task ConfigureInstance(Instance instance) {
         if (instance.WindowsOnly) {
             if (Directory.Exists(winePath))
                 return;
@@ -64,21 +63,21 @@ public class Linux : IPlatform {
                 }
             };
 
-            /* var cancelOpt = new DialogOption("Cancel", "Kills the winetricks installer, removing leftover files", (sender) => { */
-            /*     sender.SetHeader("Undoing winetricks setup"); */
-            /*     sender.SetText("Killing winetricks"); */
-            /*     if (!proc.HasExited) */
-            /*         proc.Kill(true); */
+            var cancelOpt = new DialogOption("Cancel", "Kills the winetricks installer, removing leftover files", (sender) => {
+                sender.SetHeader("Undoing winetricks setup");
+                sender.SetText("Killing winetricks");
+                if (!proc.HasExited)
+                    proc.Kill(true);
 
-            /*     sender.SetText("Deleting unfinished wine installation at " + winePath); */
-            /*     Directory.Delete(winePath, true); */
+                sender.SetText("Deleting unfinished wine installation at " + winePath);
+                Directory.Delete(winePath, true);
 
-            /*     sender.Close(); */
-            /* }); */
+                sender.Close();
+            });
 
+            var dialog = Program.Launcher.NewProgressDialog("Performing first time wine setup", "Wine setup", "Installing xna40", new DialogOption[] { cancelOpt });
 
             void DataRecieved(object sender, DataReceivedEventArgs args) {
-                Console.WriteLine("data recieved: " + Thread.CurrentThread.ManagedThreadId);
                 if (!string.IsNullOrEmpty(args.Data))
                     dialog.SetText(args.Data);
             }
@@ -91,7 +90,6 @@ public class Linux : IPlatform {
             proc.BeginErrorReadLine();
 
             dialog.PulseWhile(100, () => {
-                Console.WriteLine("dialog pulsewhile: " + Thread.CurrentThread.ManagedThreadId);
                 return !proc.HasExited;
             });
 
@@ -115,6 +113,7 @@ public class Linux : IPlatform {
             }
         };
 
+        // These will remain until an actual logging system is setup for each instance
         proc.OutputDataReceived += (sender, args) => { Console.WriteLine(args.Data); };
         proc.ErrorDataReceived += (sender, args) => { Console.WriteLine("err: " + args.Data); };
 

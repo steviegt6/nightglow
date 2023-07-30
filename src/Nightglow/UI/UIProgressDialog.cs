@@ -88,7 +88,6 @@ public class UIProgressDialog : IProgressDialog {
     }
 
     public void PulseWhile(int ms, Func<bool> condition) {
-        Console.WriteLine("creating pulsewhile: " + Thread.CurrentThread.ManagedThreadId);
         Task.Run(() => {
             while (condition()) {
                 bar?.Pulse();

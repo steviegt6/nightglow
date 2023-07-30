@@ -15,7 +15,7 @@ public class TAPIInstance : Instance, ICreateInstance {
     public override string WindowsExecutable => throw new System.NotImplementedException();
 
     [RequiresPreviewFeatures]
-    public static async Task<Instance> Create(IProgressDialog dialog, string name) {
+    public static async Task<Instance> Create(string name) {
         throw new System.NotImplementedException();
     }
 

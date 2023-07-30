@@ -126,12 +126,8 @@ public class AddInstanceWindow : ApplicationWindow {
             return;
         }
 
-        var cancelOpt = new DialogOption("Cancel", "guh", (sender) => { Console.WriteLine("cancel"); });
-        var dialog = Program.Launcher.NewProgressDialog("Performing first time wine setup", "Wine setup", "Installing xna40", new DialogOption[] { });
-
         Task.Run(async () => {
-            Console.WriteLine("CreateSelectedInstanceAsync Task.Run: " + Thread.CurrentThread.ManagedThreadId);
-            var instance = await (Task<Instance>)createInstanceMethods[visibleBox].Invoke(null, new object[] { dialog, nameEntry.GetText() })!;
+            var instance = await (Task<Instance>)createInstanceMethods[visibleBox].Invoke(null, new object[] { nameEntry.GetText() })!;
             Program.Launcher.Instances.Add(instance);
             var uiInstance = new UIInstance(instance, pane);
             pane.SetInstance(uiInstance);

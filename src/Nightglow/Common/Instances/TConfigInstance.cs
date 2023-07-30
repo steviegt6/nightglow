@@ -9,7 +9,6 @@ using Mono.Cecil;
 using Mono.Cecil.Cil;
 using Mono.Cecil.Rocks;
 using MonoMod.Cil;
-using Nightglow.Common.Dialogs;
 
 namespace Nightglow.Common.Instances;
 
@@ -22,7 +21,7 @@ public class TConfigInstance : Instance, ICreateInstance {
     public TConfigInstance(string path, InstanceInfo info) : base(path, info) { }
 
     [RequiresPreviewFeatures]
-    public static async Task<Instance> Create(IProgressDialog dialog, string name) {
+    public static async Task<Instance> Create(string name) {
         var path = DeterminePath(name);
         Directory.CreateDirectory(path);
 
@@ -38,9 +37,7 @@ public class TConfigInstance : Instance, ICreateInstance {
         TConfigInstance instance = new TConfigInstance(path, new InstanceInfo(name, typeof(TConfigInstance)));
         instance.Save();
 
-        Console.WriteLine("Create: " + Thread.CurrentThread.ManagedThreadId);
-
-        await Launcher.Platform.ConfigureInstance(dialog, instance);
+        await Launcher.Platform.ConfigureInstance(instance);
 
         ModifyAssembly(path);
 
