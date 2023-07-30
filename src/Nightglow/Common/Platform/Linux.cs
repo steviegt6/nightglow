@@ -42,7 +42,7 @@ public class Linux : IPlatform {
     }
 
     private void SetWineEnv(string path) {
-        Environment.SetEnvironmentVariable("WINEPREFIX", winePath);
+        Environment.SetEnvironmentVariable("WINEPREFIX", path);
         Environment.SetEnvironmentVariable("WINEARCH", "win64");
     }
 
@@ -51,7 +51,7 @@ public class Linux : IPlatform {
             if (Directory.Exists(winePath))
                 return;
 
-            SetWineEnv(Path.Combine(instance.InstancePath, "wine"));
+            SetWineEnv(winePath);
 
             var proc = new Process {
                 StartInfo = new ProcessStartInfo {
@@ -100,7 +100,7 @@ public class Linux : IPlatform {
     }
 
     public Process Launch(Instance instance) {
-        SetWineEnv(Path.Combine(instance.InstancePath, "wine"));
+        SetWineEnv(winePath);
 
         var proc = new Process {
             StartInfo = new ProcessStartInfo {
