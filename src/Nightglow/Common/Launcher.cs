@@ -73,8 +73,7 @@ public abstract class Launcher {
     /// Does not block.
     /// </summary>
     /// <param name="action">the delegate to be executed</param>
-    public static void ExecuteInMainContextNonBlocking(Action action)
-    {
+    public static void ExecuteInMainContextNonBlocking(Action action) {
         if (Context != null)
             Context.Post(_ => action(), null);
         else
