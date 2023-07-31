@@ -1,14 +1,13 @@
 using System;
 using System.IO;
 using System.IO.Compression;
-using System.Net.Http;
 using System.Runtime.Versioning;
-using System.Threading;
 using System.Threading.Tasks;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 using Mono.Cecil.Rocks;
 using MonoMod.Cil;
+using Nightglow.Common.Dialogs;
 
 namespace Nightglow.Common.Instances;
 
@@ -25,9 +24,18 @@ public class TConfigInstance : Instance, ICreateInstance {
         var path = DeterminePath(name);
         Directory.CreateDirectory(path);
 
+        var dialog = Program.Launcher.NewProgressDialog("Creating instance " + name, "Creating instance " + name, "", new DialogOption[] { });
+
         var archivePath = Path.Combine(path, "tConfig.zip");
-        var dlTask = Download(archivePath);
-        dlTask.Wait();
+        await Downloader.Download("https://ppeb.me/nightglow/tConfig.zip", archivePath, (tB, tBR, perc) => {
+            dialog.SetText($"Downloading tConfig.zip: {tBR} bytes/{tB} bytes");
+            dialog.SetFraction(perc ?? 0);
+            return false; // Should be some kind of CancellationToken thing
+        });
+
+        dialog.PulseWhile(100, () => { return true; });
+        dialog.SetText("Extracting archive tConfig.zip");
+
         ZipFile.ExtractToDirectory(archivePath, path);
         File.Delete(archivePath);
 
@@ -37,18 +45,14 @@ public class TConfigInstance : Instance, ICreateInstance {
         TConfigInstance instance = new TConfigInstance(path, new InstanceInfo(name, typeof(TConfigInstance)));
         instance.Save();
 
+        dialog.SetText("Configuring instance");
         await Launcher.Platform.ConfigureInstance(instance);
 
+        dialog.SetText("Patching assembly tConfig.exe");
         ModifyAssembly(path);
+        dialog.Close();
 
         return instance;
-    }
-
-    private static async Task Download(string archivePath) {
-        var client = new HttpClient();
-        var resultStream = await client.GetAsync("https://ppeb.me/nightglow/tConfig.zip").Result.Content.ReadAsStreamAsync();
-        using var fileStream = File.Create(archivePath);
-        resultStream.CopyTo(fileStream);
     }
 
     private static void ModifyAssembly(string path) {

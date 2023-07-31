@@ -68,9 +68,7 @@ public class UIProgressDialog : IProgressDialog {
     }
 
     public void SetText(string text) {
-        lock (this) {
-            label.SetText(text);
-        }
+        label.SetText(text);
     }
 
     public string GetText() {
@@ -78,9 +76,7 @@ public class UIProgressDialog : IProgressDialog {
     }
 
     public void Pulse() {
-        lock (this) {
-            bar.Pulse();
-        }
+        bar.Pulse();
     }
 
     public void SetPulseStep(double fraction) {
