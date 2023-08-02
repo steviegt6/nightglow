@@ -4,15 +4,18 @@ namespace Nightglow.UI;
 
 public class InstancePane {
     private UIInstance displayed = null!; // Unfortunately, this can't be set in the ctor for reasons
-    private Button iconButton; // Temporary, can replace with an actual type eventually, also used in AddInstanceWindow
+    private IconButton iconButton; // Temporary, can replace with an actual type eventually, also used in AddInstanceWindow
     private Button nameButton;
     private Box rootBox;
 
-    public InstancePane() {
+    public InstancePane(Application application, Window parent) {
         rootBox = new Box { Name = "InstancePane rootBox" };
         rootBox.SetOrientation(Orientation.Vertical);
 
-        iconButton = new Button();
+        iconButton = new IconButton(application, parent, null, 64, (icon) => {
+            displayed.Instance.Info.Icon = icon;
+            displayed.Instance.Save();
+        });
         rootBox.Append(iconButton);
 
         nameButton = new Button { Name = "nameButton" };
@@ -51,5 +54,7 @@ public class InstancePane {
 
         displayed = uiInstance;
         nameButton.Label = uiInstance.Instance.Info.Name;
+
+        iconButton.SetIcon(uiInstance.Instance.Info.Icon);
     }
 }

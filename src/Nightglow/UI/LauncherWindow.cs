@@ -1,8 +1,6 @@
 using System;
-using System.Threading;
 using Gtk;
 using Nightglow.Common;
-using Nightglow.Common.Dialogs;
 
 namespace Nightglow.UI;
 
@@ -13,7 +11,7 @@ public class LauncherWindow : ApplicationWindow {
         this.SetChild(rootBox);
 
         var centerBox = new Box { Name = "centerBox" };
-        var instancePane = new InstancePane();
+        var instancePane = new InstancePane(application, this);
         var instanceFlow = new FlowBox { Name = "instanceFlow" };
 
         var ribbonBox = new Box { Name = "ribbonBox" };

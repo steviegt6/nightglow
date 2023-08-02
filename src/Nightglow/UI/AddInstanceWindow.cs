@@ -1,23 +1,44 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Threading;
 using System.Threading.Tasks;
 using Gtk;
-using Nightglow.Common.Dialogs;
+using Nightglow.Common;
 using Nightglow.Common.Instances;
 
 namespace Nightglow.UI;
 
 public class AddInstanceWindow : ApplicationWindow {
+    private Dictionary<string, Box> createInstanceBoxes;
+    private Dictionary<string, Type> createInstanceTypes;
+    private string visibleBox = null!; // Gets set in SelectCreator which is called in the ctor
+
+    private IconButton iconButton;
+    private bool nonDefaultIconSelected;
+    private string? iconToUse;
+
     private Entry nameEntry;
     private Entry groupEntry;
-    private Dictionary<string, Box> createInstanceBoxes;
-    private Dictionary<string, MethodInfo> createInstanceMethods;
-    private string visibleBox;
+
     private InstancePane pane;
     private FlowBox flow;
+
+    private void SelectCreator(Type type, string label) {
+        if (!nonDefaultIconSelected)
+            iconButton.SetIcon(Path.Combine(Launcher.IconsPath, (string)type.GetProperty("DefaultIcon")!.GetValue(null)!));
+
+        if (visibleBox != null) {
+            if (createInstanceBoxes.TryGetValue(visibleBox, out Box? box1))
+                box1?.Hide();
+        }
+
+        if (createInstanceBoxes.TryGetValue(label, out Box? box))
+            box?.Show();
+
+        visibleBox = label;
+    }
 
     public AddInstanceWindow(Gio.Application application, InstancePane pane, FlowBox flow) {
         this.pane = pane;
@@ -34,7 +55,11 @@ public class AddInstanceWindow : ApplicationWindow {
 
         var iconBox = new Box { Name = "iconBox" };
         iconBox.SetOrientation(Orientation.Vertical);
-        var iconButton = new Button { Name = "iconButton", Label = "Icon" };
+        iconButton = new IconButton((Application)application, this, null, 64, (icon) => {
+            nonDefaultIconSelected = true;
+            iconToUse = icon;
+        });
+        iconButton.Name = "iconButton";
         iconButton.SetVexpand(true);
         iconBox.Append(iconButton);
         headerBox.Append(iconBox);
@@ -85,17 +110,13 @@ public class AddInstanceWindow : ApplicationWindow {
         rootBox.Append(footerBox);
 
         createInstanceBoxes = new Dictionary<string, Box>();
-        createInstanceMethods = new Dictionary<string, MethodInfo>();
+        createInstanceTypes = new Dictionary<string, Type>();
 
         // This should instead get all of the types, sort them, then loop back through so it is in the correct order
         foreach (Type type in Assembly.GetCallingAssembly().GetTypes()) {
             if (type.GetInterface("ICreateInstance") != null) {
                 var button = new Button { Label = type.Name };
-                button.OnClicked += (Button sender, EventArgs args) => {
-                    createInstanceBoxes[visibleBox!].Hide();
-                    createInstanceBoxes[sender.Label!].Show();
-                    visibleBox = sender.Label!;
-                };
+                button.OnClicked += (Button sender, EventArgs args) => { SelectCreator(type, sender.Label!); };
 
                 selectInstanceColumn.Append(button);
                 var box = new Box();
@@ -108,12 +129,11 @@ public class AddInstanceWindow : ApplicationWindow {
                 selectInstanceBox.Append(box);
                 box.Hide();
 
-                createInstanceMethods.Add(button.Label, type.GetMethod("Create", BindingFlags.Public | BindingFlags.Static)!);
+                createInstanceTypes.Add(button.Label, type);
             }
         }
 
-        visibleBox = createInstanceBoxes.Keys.First();
-        createInstanceBoxes.Values.First().Show();
+        SelectCreator(createInstanceTypes.Values.First(), createInstanceTypes.Keys.First());
 
         this.Application = (Application)application;
         this.Title = "New Instance - Nightglow";
@@ -127,7 +147,9 @@ public class AddInstanceWindow : ApplicationWindow {
         }
 
         Task.Run(async () => {
-            var instance = await (Task<Instance>)createInstanceMethods[visibleBox].Invoke(null, new object[] { nameEntry.GetText() })!;
+            var instance = await (Task<Instance>)createInstanceTypes[visibleBox]
+                .GetMethod("Create", BindingFlags.Public | BindingFlags.Static)!
+                .Invoke(null, new object[] { nameEntry.GetText(), iconToUse! })!;
             Program.Launcher.Instances.Add(instance);
             var uiInstance = new UIInstance(instance, pane);
             pane.SetInstance(uiInstance);

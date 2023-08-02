@@ -9,10 +9,12 @@ public abstract class Instance {
     public class InstanceInfo {
         public string Name { get; set; }
         public Type Type { get; set; }
+        public string Icon { get; set; }
 
-        public InstanceInfo(string name, Type type) {
+        public InstanceInfo(string name, Type type, string icon) {
             Name = name;
             Type = type;
+            Icon = icon;
         }
     }
 
@@ -42,9 +44,8 @@ public abstract class Instance {
         if (Directory.Exists(path)) {
             for (int i = 1; ; i++) {
                 var discriminated = path + '-' + i;
-                if (!Directory.Exists(discriminated)) {
+                if (!Directory.Exists(discriminated))
                     return discriminated;
-                }
             }
         }
         else {

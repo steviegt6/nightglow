@@ -15,12 +15,13 @@ namespace Nightglow.Common.Instances;
 public class TConfigInstance : Instance, ICreateInstance {
     public override bool WindowsOnly => true;
     public override string WindowsExecutable => "tConfig.exe";
+    public static string DefaultIcon => "tConfig.png";
     public static string NetPath => Path.Combine(Launcher.Platform.DataPath(), "wine", "drive_c", "windows", "Microsoft.NET", "Framework", "v4.0.30319");
 
     public TConfigInstance(string path, InstanceInfo info) : base(path, info) { }
 
     [RequiresPreviewFeatures]
-    public static async Task<Instance> Create(string name) {
+    public static async Task<Instance> Create(string name, string? icon) {
         var path = DeterminePath(name);
         Directory.CreateDirectory(path);
 
@@ -42,7 +43,7 @@ public class TConfigInstance : Instance, ICreateInstance {
         var gamePath = Path.Combine(path, "game");
         Directory.Move(Path.Combine(path, "tConfig 0.38"), gamePath);
 
-        TConfigInstance instance = new TConfigInstance(path, new InstanceInfo(name, typeof(TConfigInstance)));
+        TConfigInstance instance = new TConfigInstance(path, new InstanceInfo(name, typeof(TConfigInstance), icon ?? DefaultIcon));
         instance.Save();
 
         dialog.SetText("Configuring instance");

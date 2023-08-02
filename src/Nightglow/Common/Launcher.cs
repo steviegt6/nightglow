@@ -14,6 +14,7 @@ namespace Nightglow.Common;
 public abstract class Launcher {
     public static IPlatform Platform { get; }
     public static string InstancesPath => Path.Combine(Platform.DataPath(), "instances");
+    public static string IconsPath => Path.Combine(Platform.DataPath(), "icons");
     public List<Instance> Instances { get; set; }
     public static SynchronizationContext Context = null!; // If this wasn't set in MainCommand it already threw
 

@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Threading;
 using Gtk;
 using Nightglow.Common;
 using Nightglow.Common.Dialogs;
