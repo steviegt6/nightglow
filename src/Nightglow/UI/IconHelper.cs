@@ -15,6 +15,10 @@ public static class IconHelper {
             return Path.Combine(Launcher.IconsPath, icon);
     }
 
+    public static bool IsEmbedded(string icon) {
+        return icon.StartsWith("Nightglow.Assets.Icons");
+    }
+
     public static IEnumerable<string> GetAllIcons() {
         return LoadEmbeddedIcons()
             .Concat(Directory.GetFiles(Launcher.IconsPath)

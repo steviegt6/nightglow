@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Gtk;
@@ -8,6 +9,23 @@ namespace Nightglow.UI;
 
 public class IconWindow : ApplicationWindow {
     private string selectedIcon = null!;
+
+    // Very very very slow... seemingly the only option for sorting the list though, as the normal gtk sorter things are unimplemented by gir core
+    // Yes, this defeats the purpose of a stringlist, which is meant to quickly add and remove items... because this is slow...
+    private void SortStringList(StringList list) {
+        var temp = new List<string>();
+
+        while (list.GetNItems() > 0) {
+            var item = list.GetString(0);
+            if (item != null)
+                temp.Add(item);
+
+            list.Remove(0);
+        }
+
+        foreach (var item in temp.Select(s => Path.GetFileName(s)).OrderBy(s => s))
+            list.Append(item);
+    }
 
     public IconWindow(Gio.Application application, Window parent, string? selected, Action<string> callback) {
         this.Application = (Application)application;
@@ -108,6 +126,7 @@ public class IconWindow : ApplicationWindow {
 
         var leftBox = new Box { Name = "IconWindow leftBox" };
         leftBox.SetOrientation(Orientation.Horizontal);
+
         var addIconButton = new Button { Name = "IconWindow addIconButton", Label = "Add Icon" };
         addIconButton.OnClicked += (_, _) => {
             var filter = FileFilter.New();
@@ -131,9 +150,26 @@ public class IconWindow : ApplicationWindow {
 
                 // Sort eventually?
                 model.Append(name);
+                SortStringList(model);
             };
         };
         leftBox.Append(addIconButton);
+
+        var removeIconButton = new Button { Name = "IconWindow addIconButton", Label = "Remove Icon" };
+        removeIconButton.OnClicked += (_, _) => {
+            for (uint i = 0; i < model.GetNItems(); i++) {
+                var item = model.GetString(i);
+                if (item != selectedIcon)
+                    continue;
+
+                if (!IconHelper.IsEmbedded(item)) {
+                    model.Remove(i);
+                    File.Delete(IconHelper.GetPath(item));
+                    selectedIcon = "Nightglow.Assets.Icons.Terraria.png";
+                }
+            }
+        };
+        leftBox.Append(removeIconButton);
         footer.Append(leftBox);
 
         var rightBox = new Box { Name = "IconWindow rightBox" };
