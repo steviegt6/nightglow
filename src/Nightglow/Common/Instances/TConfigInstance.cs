@@ -15,7 +15,7 @@ namespace Nightglow.Common.Instances;
 public class TConfigInstance : Instance, ICreateInstance {
     public override bool WindowsOnly => true;
     public override string WindowsExecutable => "tConfig.exe";
-    public static string DefaultIcon => "tConfig.png";
+    public static string DefaultIcon => "Nightglow.Assets.Icons.tConfig.png";
     public static string NetPath => Path.Combine(Launcher.Platform.DataPath(), "wine", "drive_c", "windows", "Microsoft.NET", "Framework", "v4.0.30319");
 
     public TConfigInstance(string path, InstanceInfo info) : base(path, info) { }

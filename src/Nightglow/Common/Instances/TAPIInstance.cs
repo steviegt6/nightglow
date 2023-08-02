@@ -7,7 +7,7 @@ namespace Nightglow.Common.Instances;
 public class TAPIInstance : Instance, ICreateInstance {
     public TAPIInstance(string path, InstanceInfo info) : base(path, info) { }
 
-    public static string DefaultIcon => "tAPI.png";
+    public static string DefaultIcon => "Nightglow.Assets.Icons.tAPI.png";
 
     public static string NetPath => throw new System.NotImplementedException();
 

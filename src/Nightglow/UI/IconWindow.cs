@@ -22,7 +22,7 @@ public class IconWindow : ApplicationWindow {
 
         var view = new GridView { Name = "IconWindow iconView" };
         view.SetVexpand(true);
-        var model = StringList.New(Directory.GetFiles(Launcher.IconsPath).Select(i => Path.GetFileName(i)).ToArray()); // This should be sorted, but gir core doesn't support Expressions...
+        var model = StringList.New(IconHelper.GetAllIcons().ToArray()); // This should be sorted, but gir core doesn't support Expressions...
         view.SetModel(NoSelection.New(model));
         GObject.SignalHandler<Button> onClicked = (_, _) => { };
         var factory = SignalListItemFactory.New();
@@ -53,13 +53,13 @@ public class IconWindow : ApplicationWindow {
                 return;
 
             // Eventually do embedded resources
-            image.SetFromFile(Path.Combine(Launcher.IconsPath, icon));
+            image.SetFromFile(IconHelper.GetPath(icon));
 
             var label = (Label?)box.GetLastChild();
             if (label == null)
                 return;
 
-            label.SetText(Path.GetFileName(icon));
+            label.SetText(icon.StartsWith("Nightglow.Assets.Icons") ? icon.Replace("Nightglow.Assets.Icons.", "") : icon);
 
             // FIXME: Seemingly gets called like 6 times
             onClicked = (_, _) => { selectedIcon = icon; button.GrabFocus(); };

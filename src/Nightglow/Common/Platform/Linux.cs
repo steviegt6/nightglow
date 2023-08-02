@@ -3,7 +3,6 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Threading;
 using System.Threading.Tasks;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
@@ -16,6 +15,15 @@ namespace Nightglow.Common.Platform;
 
 public class Linux : IPlatform {
     private string winePath => Path.Combine(DataPath(), "wine");
+
+    public string CachePath() {
+        var xdg = Environment.GetEnvironmentVariable("XDG_CACHE_HOME");
+
+        if (!string.IsNullOrEmpty(xdg))
+            return Path.Combine(xdg, "nightglow");
+        else
+            return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Personal), ".cache", "nightglow");
+    }
 
     public string DataPath() {
         var xdg = Environment.GetEnvironmentVariable("XDG_DATA_HOME");

@@ -7,6 +7,7 @@ using Nightglow.Common.Instances;
 namespace Nightglow.Common.Platform;
 
 public interface IPlatform {
+    public string CachePath();
     public string DataPath();
     /// <summary>
     ///     On platforms making use of wine for Windows-only instances, returns a path with Z: at the front. Does nothing on Windows.

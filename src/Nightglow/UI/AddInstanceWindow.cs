@@ -1,11 +1,9 @@
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using Gtk;
-using Nightglow.Common;
 using Nightglow.Common.Instances;
 
 namespace Nightglow.UI;
@@ -27,7 +25,7 @@ public class AddInstanceWindow : ApplicationWindow {
 
     private void SelectCreator(Type type, string label) {
         if (!nonDefaultIconSelected)
-            iconButton.SetIcon(Path.Combine(Launcher.IconsPath, (string)type.GetProperty("DefaultIcon")!.GetValue(null)!));
+            iconButton.SetIcon((string)type.GetProperty("DefaultIcon")!.GetValue(null)!);
 
         if (visibleBox != null) {
             if (createInstanceBoxes.TryGetValue(visibleBox, out Box? box1))

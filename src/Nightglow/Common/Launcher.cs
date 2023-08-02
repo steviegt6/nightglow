@@ -23,8 +23,10 @@ public abstract class Launcher {
     }
 
     public Launcher() {
+        Directory.CreateDirectory(Platform.CachePath());
         Directory.CreateDirectory(Platform.DataPath());
         Directory.CreateDirectory(InstancesPath);
+        Directory.CreateDirectory(IconsPath);
 
         Instances = new List<Instance>();
 
