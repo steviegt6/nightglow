@@ -3,7 +3,7 @@ using Gtk;
 
 namespace Nightglow.UI;
 
-public class IconButton : Button {
+public class IconButton : Button, IDisposable {
     private readonly int _size;
 
     public IconButton(Gtk.Application application, Window parent, string? icon, int size, Action<string> callback) {
@@ -25,5 +25,10 @@ public class IconButton : Button {
         image = Image.NewFromFile(IconHelper.GetPath(icon));
         image.SetSizeRequest(_size, _size);
         this.SetChild(image); // I don't know if I even need to reset the Child but it can't hurt...
+    }
+
+    public override void Dispose() {
+        this.GetChild()?.Dispose();
+        base.Dispose();
     }
 }

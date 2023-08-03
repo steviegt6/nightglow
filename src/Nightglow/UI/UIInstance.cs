@@ -1,21 +1,30 @@
+using System;
+using System.Collections.Generic;
 using Gtk;
+using Nightglow.Common;
 using Nightglow.Common.Instances;
 
 namespace Nightglow.UI;
 
-public class UIInstance : FlowBoxChild {
+public class UIInstance : FlowBoxChild, IDisposable {
+    private List<IDisposable> disposables;
+
     public Instance Instance { get; }
     public Entry NameEntry { get; }
 
     public UIInstance(Instance instance, InstancePane pane) {
+        disposables = new List<IDisposable>();
+
         this.Instance = instance;
         this.Name = instance.Info.Name;
 
         var rootBox = new Box { Name = "UIInstance rootBox" };
+        disposables.Add(rootBox);
         rootBox.SetOrientation(Orientation.Vertical);
         this.SetChild(rootBox);
 
         var button = new Button { Name = instance.Info.Name + "-Button", Label = instance.Info.Name };
+        disposables.Add(button);
         button.OnClicked += (_, _) => {
             pane.SetInstance(this);
         };
@@ -35,5 +44,13 @@ public class UIInstance : FlowBoxChild {
         NameEntry = new Entry { Name = "UIInstance nameEntry", CanFocus = false, FocusOnClick = false };
         NameEntry.SetText(instance.Info.Name);
         rootBox.Append(NameEntry);
+    }
+
+    public override void Dispose() {
+        DisposableUtils.DisposeList(disposables);
+
+        NameEntry.Dispose();
+
+        base.Dispose();
     }
 }

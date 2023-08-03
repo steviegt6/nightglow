@@ -5,7 +5,7 @@ using Newtonsoft.Json;
 
 namespace Nightglow.Common.Instances;
 
-public abstract class Instance {
+public abstract class Instance : IDisposable {
     public class InstanceInfo {
         public string Name { get; set; }
         public Type Type { get; set; }
@@ -55,5 +55,9 @@ public abstract class Instance {
 
     public void Launch() {
         Process = Launcher.Platform.Launch(this);
+    }
+
+    public void Dispose() {
+        Process?.Dispose();
     }
 }

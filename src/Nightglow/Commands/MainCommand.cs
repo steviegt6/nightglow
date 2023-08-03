@@ -15,7 +15,7 @@ namespace Nightglow.Commands;
 public sealed class MainCommand : BaseCommand {
     protected override ValueTask ExecuteAsync(IConsole console) {
         Program.Launcher = new UILauncher();
-        var application = Gtk.Application.New("dev.tomat.terraprisma.nightglow", Gio.ApplicationFlags.FlagsNone);
+        using var application = Gtk.Application.New("dev.tomat.terraprisma.nightglow", Gio.ApplicationFlags.FlagsNone);
         application.OnActivate += (sender, args) => {
             var window = new LauncherWindow((Gtk.Application)sender);
             window.Show();

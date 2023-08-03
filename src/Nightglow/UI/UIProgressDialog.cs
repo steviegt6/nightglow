@@ -3,11 +3,14 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Gtk;
+using Nightglow.Common;
 using Nightglow.Common.Dialogs;
 
 namespace Nightglow.UI;
 
 public class UIProgressDialog : IProgressDialog {
+    private List<IDisposable> disposables;
+
     private readonly Application _application;
     private readonly Window _parent;
     private Window dialog = null!;
@@ -16,6 +19,7 @@ public class UIProgressDialog : IProgressDialog {
     private ProgressBar bar = null!;
 
     public UIProgressDialog(Application application, Window parent) { // This is stupid
+        disposables = new List<IDisposable>();
         _application = application;
         _parent = parent;
     }
@@ -24,6 +28,7 @@ public class UIProgressDialog : IProgressDialog {
         dialog = new Window { Title = title, Application = _application, Modal = true };
 
         var rootBox = new Box { Name = "ProgressDialog rootBox" };
+        disposables.Add(rootBox);
         rootBox.SetOrientation(Orientation.Vertical);
         dialog.SetChild(rootBox);
 
@@ -40,12 +45,14 @@ public class UIProgressDialog : IProgressDialog {
         rootBox.Append(label);
 
         var footerBox = new Box { Name = "ProgressDialog footerBox" };
+        disposables.Add(footerBox);
         footerBox.SetOrientation(Orientation.Horizontal);
         footerBox.SetHalign(Align.End);
         rootBox.Append(footerBox);
 
         foreach (DialogOption opt in opts) {
             var button = new Button { Label = opt.Label };
+            disposables.Add(button);
             button.OnClicked += (_, _) => opt.OnAccept(this);
             footerBox.Append(button);
         }
@@ -84,15 +91,26 @@ public class UIProgressDialog : IProgressDialog {
     }
 
     public void PulseWhile(int ms, Func<bool> condition) {
-        Task.Run(() => {
+        var pulseTask = Task.Run(() => {
             while (condition()) {
                 bar?.Pulse();
                 Thread.Sleep(ms);
             }
         });
+
+        disposables.Add(pulseTask);
     }
 
     public void Close() {
         dialog.Close();
+    }
+
+    public void Dispose() {
+        DisposableUtils.DisposeList(disposables);
+
+        dialog.Dispose();
+        headerLabel.Dispose();
+        label.Dispose();
+        bar.Dispose();
     }
 }

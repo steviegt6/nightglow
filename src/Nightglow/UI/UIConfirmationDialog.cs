@@ -15,4 +15,8 @@ public class UIConfirmationDialog : IConfirmationDialog {
     public void Close() {
         throw new System.NotImplementedException();
     }
+
+    public void Dispose() {
+        throw new System.NotImplementedException();
+    }
 }

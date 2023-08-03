@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace Nightglow.Common.Dialogs;
 
-public interface IProgressDialog {
+public interface IProgressDialog : IDisposable {
     public void Initialize(string title, string header, string text, IEnumerable<DialogOption> opts);
     public void SetFraction(double fraction);
     public void SetHeader(string header);

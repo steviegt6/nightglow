@@ -56,6 +56,7 @@ public class Linux : IPlatform {
 
     public async Task ConfigureInstance(Instance instance) {
         if (instance.WindowsOnly) {
+            bool closedAndDisposed = false;
             if (Directory.Exists(winePath))
                 return;
 
@@ -76,11 +77,14 @@ public class Linux : IPlatform {
                 sender.SetText("Killing winetricks");
                 if (!proc.HasExited)
                     proc.Kill(true);
+                proc.Dispose();
 
                 sender.SetText("Deleting unfinished wine installation at " + winePath);
                 Directory.Delete(winePath, true);
 
                 sender.Close();
+                sender.Dispose();
+                closedAndDisposed = true;
             });
 
             var dialog = Program.Launcher.NewProgressDialog("Performing first time wine setup", "Wine setup", "Installing xna40", new DialogOption[] { cancelOpt });
@@ -102,7 +106,11 @@ public class Linux : IPlatform {
             });
 
             await proc.WaitForExitAsync();
-            dialog.Close();
+            if (!closedAndDisposed) {
+                proc.Dispose();
+                dialog.Close();
+                dialog.Dispose();
+            }
         }
         // is there anything else to even configure?
     }

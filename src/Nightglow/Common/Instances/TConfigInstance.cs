@@ -58,7 +58,7 @@ public class TConfigInstance : Instance, ICreateInstance {
 
     private static void ModifyAssembly(string path) {
         var asmPath = Path.Combine(path, "game", "tConfig.exe");
-        var resolver = new DefaultAssemblyResolver();
+        using var resolver = new DefaultAssemblyResolver();
         resolver.AddSearchDirectory(Path.Combine(path, "game"));
         resolver.AddSearchDirectory(Path.Combine(path, NetPath));
         using var md = ModuleDefinition.ReadModule(asmPath, new ReaderParameters { AssemblyResolver = resolver });
