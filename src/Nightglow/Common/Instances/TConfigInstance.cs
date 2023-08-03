@@ -77,7 +77,7 @@ public class TConfigInstance : Instance, ICreateInstance {
             throw new Exception("Unable to patch tConfig.exe");
         else {
             c.RemoveRange(28);
-            Launcher.Platform.DataPathIL(md, c, Path.Combine(path, Path.Combine(path, NetPath, "mscorlib.dll")));
+            Launcher.Platform.DataPathIL(md, c, Path.Combine(NetPath, "mscorlib.dll"));
         }
 
         // tConfig makes its paths by string.join-ing an array, just set the tConfig part empty so it doesn't make any subdirectories
@@ -92,10 +92,7 @@ public class TConfigInstance : Instance, ICreateInstance {
             }
         }
 
-        // md.Write errors if you don't write it to a temporary path first
-        var tempAsm = Path.Combine(path, "tConfig.exe-1");
-        md.Write(tempAsm);
-        File.Delete(asmPath);
-        File.Move(tempAsm, asmPath);
+        File.Move(asmPath, asmPath + ".bak");
+        md.Write(asmPath);
     }
 }
