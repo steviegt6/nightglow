@@ -9,7 +9,7 @@ namespace Nightglow.UI;
 public static class IconHelper {
     // Icons are stored either as the full name of an embedded resource or the name of the icon's file. This prevents name collisions as well as preventing the icons from pointing to the wrong cache or data path if an instance changes OS.
     public static string GetPath(string icon) {
-        if (icon.StartsWith("Nightglow.Assets.Icons"))
+        if (IsEmbedded(icon))
             return Path.Combine(Launcher.Platform.CachePath(), icon);
         else
             return Path.Combine(Launcher.IconsPath, icon);
@@ -19,11 +19,19 @@ public static class IconHelper {
         return icon.StartsWith("Nightglow.Assets.Icons");
     }
 
+    public static string GetFakeName(string icon) {
+        return IsEmbedded(icon) ? icon.Replace("Nightglow.Assets.Icons.", "") : icon;
+    }
+
     public static IEnumerable<string> GetAllIcons() {
         return LoadEmbeddedIcons()
             .Concat(Directory.GetFiles(Launcher.IconsPath)
                 .Select(f => Path.GetFileName(f)))
-            .OrderBy(i => i);
+            .OrderByFakeName();
+    }
+
+    public static IEnumerable<string> OrderByFakeName(this IEnumerable<string> icons) {
+        return icons.OrderBy(i => GetFakeName(i));
     }
 
     public static List<string> LoadEmbeddedIcons() {

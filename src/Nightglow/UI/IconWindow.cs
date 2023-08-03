@@ -23,7 +23,7 @@ public class IconWindow : ApplicationWindow {
             list.Remove(0);
         }
 
-        foreach (var item in temp.Select(s => Path.GetFileName(s)).OrderBy(s => s))
+        foreach (var item in temp.OrderByFakeName())
             list.Append(item);
     }
 
@@ -77,7 +77,7 @@ public class IconWindow : ApplicationWindow {
             if (label == null)
                 return;
 
-            label.SetText(icon.StartsWith("Nightglow.Assets.Icons") ? icon.Replace("Nightglow.Assets.Icons.", "") : icon);
+            label.SetText(IconHelper.GetFakeName(icon));
 
             // FIXME: Seemingly gets called like 6 times
             onClicked = (_, _) => { selectedIcon = icon; button.GrabFocus(); };
@@ -146,6 +146,11 @@ public class IconWindow : ApplicationWindow {
 
                 var name = Path.GetFileName(path);
                 var newPath = Path.Combine(Launcher.IconsPath, name);
+                if (File.Exists(newPath)) {
+                    // TODO: Use confirmation dialog
+                    return;
+                }
+
                 File.Copy(path, newPath);
 
                 // Sort eventually?
