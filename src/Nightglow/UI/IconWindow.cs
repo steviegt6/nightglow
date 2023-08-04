@@ -73,7 +73,7 @@ public class IconWindow : ApplicationWindow, IDisposable {
         var view = new GridView { Name = "IconWindow iconView" };
         disposables.Add(view);
         view.SetVexpand(true);
-        var model = StringList.New(IconHelper.GetAllIcons().ToArray()); // This should be sorted, but gir core doesn't support Expressions...
+        var model = StringList.New(IconUtils.GetAllIcons().ToArray()); // This should be sorted, but gir core doesn't support Expressions...
         disposables.Add(model);
         view.SetModel(NoSelection.New(model));
         GObject.SignalHandler<Button> onClicked = (_, _) => { };
@@ -113,13 +113,13 @@ public class IconWindow : ApplicationWindow, IDisposable {
                 return;
 
             // Eventually do embedded resources
-            image.SetFromFile(IconHelper.GetPath(icon));
+            image.SetFromFile(IconUtils.GetPath(icon));
 
             var label = (Label?)box.GetLastChild();
             if (label == null)
                 return;
 
-            label.SetText(IconHelper.GetFakeName(icon));
+            label.SetText(IconUtils.GetFakeName(icon));
 
             if (icon == selected) {
                 button.Sensitive = false;
@@ -140,7 +140,7 @@ public class IconWindow : ApplicationWindow, IDisposable {
                 if (okButton != null)
                     okButton.Sensitive = true;
 
-                if (IconHelper.IsEmbedded(icon)) // I hope removeIconButton isn't somehow null here :)
+                if (IconUtils.IsEmbedded(icon)) // I hope removeIconButton isn't somehow null here :)
                     removeIconButton!.Sensitive = false;
                 else
                     removeIconButton!.Sensitive = true;
@@ -228,7 +228,7 @@ public class IconWindow : ApplicationWindow, IDisposable {
         leftBox.Append(addIconButton);
 
         removeIconButton = new Button { Name = "IconWindow addIconButton", Label = "Remove Icon" };
-        if (selected != null && IconHelper.IsEmbedded(selected))
+        if (selected != null && IconUtils.IsEmbedded(selected))
             removeIconButton.Sensitive = false;
         removeIconButton.OnClicked += (_, _) => {
             for (uint i = 0; i < model.GetNItems(); i++) {
@@ -236,9 +236,9 @@ public class IconWindow : ApplicationWindow, IDisposable {
                 if (item != selectedIcon)
                     continue;
 
-                if (!IconHelper.IsEmbedded(item)) {
+                if (!IconUtils.IsEmbedded(item)) {
                     model.Remove(i);
-                    File.Delete(IconHelper.GetPath(item));
+                    File.Delete(IconUtils.GetPath(item));
                     SelectDefault();
                 }
             }

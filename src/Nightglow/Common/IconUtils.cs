@@ -2,11 +2,10 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using Nightglow.Common;
 
-namespace Nightglow.UI;
+namespace Nightglow.Common;
 
-public static class IconHelper {
+public static class IconUtils {
     // Icons are stored either as the full name of an embedded resource or the name of the icon's file. This prevents name collisions as well as preventing the icons from pointing to the wrong cache or data path if an instance changes OS.
     public static string GetPath(string icon) {
         if (IsEmbedded(icon))
@@ -36,7 +35,7 @@ public static class IconHelper {
 
     public static List<string> LoadEmbeddedIcons() {
         var ret = new List<string>();
-        var assembly = Assembly.GetAssembly(typeof(IconHelper))!;
+        var assembly = Assembly.GetAssembly(typeof(IconUtils))!;
         foreach (var resource in assembly.GetManifestResourceNames()) {
             if (!resource.StartsWith("Nightglow.Assets.Icons"))
                 continue;

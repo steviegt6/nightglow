@@ -1,5 +1,6 @@
 using System;
 using Gtk;
+using Nightglow.Common;
 
 namespace Nightglow.UI;
 
@@ -24,7 +25,7 @@ public class IconButton : Button, IDisposable {
         image?.Dispose();
 
         _icon = icon;
-        image = Image.NewFromFile(IconHelper.GetPath(icon));
+        image = Image.NewFromFile(IconUtils.GetPath(icon));
         image.SetSizeRequest(_size, _size);
         this.SetChild(image); // I don't know if I even need to reset the Child but it can't hurt...
     }
