@@ -7,15 +7,33 @@ using Nightglow.Common;
 
 namespace Nightglow.UI;
 
-public class IconWindow : ApplicationWindow {
+public class IconWindow : ApplicationWindow, IDisposable {
     private List<IDisposable> disposables;
 
     private static FileFilter Filter;
+    private Button okButton;
+    private Button removeIconButton;
+    private Button defaultButton = null!;
+    private Button selectedButton = null!;
     private string selectedIcon = null!;
 
     static IconWindow() {
         Filter = FileFilter.New();
         Filter.AddPixbufFormats();
+    }
+
+    // I love state
+    private void SelectDefault() {
+        if (defaultButton == null)
+            return;
+
+        defaultButton.Sensitive = false;
+        selectedIcon = "Nightglow.Assets.Icons.Terraria.png";
+
+        if (selectedButton != null)
+            selectedButton.Sensitive = true;
+
+        selectedButton = defaultButton;
     }
 
     // Very very very slow... seemingly the only option for sorting the list though, as the normal gtk sorter things are unimplemented by gir core
@@ -37,7 +55,6 @@ public class IconWindow : ApplicationWindow {
 
     public IconWindow(Gio.Application application, Window parent, string? selected, Action<string> callback) {
         disposables = new List<IDisposable>();
-        this.OnCloseRequest += (_, _) => { this.Dispose(); return false; };
 
         this.Application = (Application)application;
         this.Title = "Select Icon - Nightglow";
@@ -46,10 +63,13 @@ public class IconWindow : ApplicationWindow {
         this.SetModal(true);
 
         var rootBox = new Box { Name = "IconWindow rootBox" };
-        disposables.Add(rootBox);
+        // For some reason, disposing of the root box causes a crash...
+        /* disposables.Add(rootBox); */
         rootBox.SetOrientation(Orientation.Vertical);
         this.SetChild(rootBox);
 
+        var scrolled = new ScrolledWindow();
+        disposables.Add(scrolled);
         var view = new GridView { Name = "IconWindow iconView" };
         disposables.Add(view);
         view.SetVexpand(true);
@@ -81,6 +101,13 @@ public class IconWindow : ApplicationWindow {
             if (icon == null || button == null || box == null)
                 return;
 
+            if (icon == "Nightglow.Assets.Icons.Terraria.png") {
+                defaultButton = button;
+
+                if (selected == null)
+                    button.Sensitive = false;
+            }
+
             var image = (Image?)box.GetFirstChild();
             if (image == null)
                 return;
@@ -94,8 +121,30 @@ public class IconWindow : ApplicationWindow {
 
             label.SetText(IconHelper.GetFakeName(icon));
 
+            if (icon == selected) {
+                button.Sensitive = false;
+                selectedButton = button;
+                selectedIcon = icon;
+            }
+
             // FIXME: Seemingly gets called like 6 times
-            onClicked = (_, _) => { selectedIcon = icon; button.GrabFocus(); };
+            onClicked = (sender, args) => {
+                selectedIcon = icon;
+
+                if (selectedButton != null)
+                    selectedButton.Sensitive = true;
+
+                sender.Sensitive = false;
+                selectedButton = sender;
+
+                if (okButton != null)
+                    okButton.Sensitive = true;
+
+                if (IconHelper.IsEmbedded(icon)) // I hope removeIconButton isn't somehow null here :)
+                    removeIconButton!.Sensitive = false;
+                else
+                    removeIconButton!.Sensitive = true;
+            };
             button.OnClicked += onClicked;
         };
         factory.OnUnbind += (factory, args) => {
@@ -134,7 +183,8 @@ public class IconWindow : ApplicationWindow {
                 label.Dispose();
         };
         view.SetFactory(factory);
-        rootBox.Append(view);
+        scrolled.SetChild(view);
+        rootBox.Append(scrolled);
 
         var footer = new Box { Name = "IconWindow footer" };
         disposables.Add(footer);
@@ -177,8 +227,9 @@ public class IconWindow : ApplicationWindow {
         };
         leftBox.Append(addIconButton);
 
-        var removeIconButton = new Button { Name = "IconWindow addIconButton", Label = "Remove Icon" };
-        disposables.Add(removeIconButton);
+        removeIconButton = new Button { Name = "IconWindow addIconButton", Label = "Remove Icon" };
+        if (selected != null && IconHelper.IsEmbedded(selected))
+            removeIconButton.Sensitive = false;
         removeIconButton.OnClicked += (_, _) => {
             for (uint i = 0; i < model.GetNItems(); i++) {
                 var item = model.GetString(i);
@@ -188,7 +239,7 @@ public class IconWindow : ApplicationWindow {
                 if (!IconHelper.IsEmbedded(item)) {
                     model.Remove(i);
                     File.Delete(IconHelper.GetPath(item));
-                    selectedIcon = "Nightglow.Assets.Icons.Terraria.png";
+                    SelectDefault();
                 }
             }
         };
@@ -200,18 +251,31 @@ public class IconWindow : ApplicationWindow {
         rightBox.SetOrientation(Orientation.Horizontal);
         rightBox.SetHexpand(true);
         rightBox.SetHalign(Align.End);
-        var okButton = new Button { Name = "iconWindow okButton", Label = "Ok" };
-        disposables.Add(okButton);
+
+        okButton = new Button { Name = "iconWindow okButton", Label = "Ok" };
+        if (selected != null)
+            okButton.Sensitive = true;
         okButton.OnClicked += (_, _) => {
             this.Close();
+            this.Dispose();
             callback(selectedIcon);
         };
         rightBox.Append(okButton);
+
         var cancelButton = new Button { Name = "IconWindow cancelButton", Label = "Cancel" };
         disposables.Add(cancelButton);
-        cancelButton.OnClicked += (_, _) => { this.Close(); };
+        cancelButton.OnClicked += (_, _) => { this.Close(); this.Dispose(); };
         rightBox.Append(cancelButton);
         footer.Append(rightBox);
         rootBox.Append(footer);
+    }
+
+    public override void Dispose() {
+        DisposableUtils.DisposeList(disposables);
+
+        okButton.Dispose();
+        removeIconButton.Dispose();
+
+        base.Dispose();
     }
 }
