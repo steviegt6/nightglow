@@ -1,14 +1,19 @@
 using System;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using Newtonsoft.Json;
+using VDFParser;
+using VDFParser.Models;
 
 namespace Nightglow.Common.Instances;
 
 public abstract class Instance : IDisposable {
     public class InstanceInfo {
         public string Name { get; set; }
+
         public Type Type { get; set; }
+
         public string Icon { get; set; }
 
         public InstanceInfo(string name, Type type, string icon) {
@@ -19,12 +24,18 @@ public abstract class Instance : IDisposable {
     }
 
     public string InstancePath { get; set; }
+
     private string jsonPath => Path.Combine(InstancePath, "nightglow.json");
+
     public abstract bool WindowsOnly { get; }
+
     // There is definitely a better way to do this
     public abstract string WindowsExecutable { get; }
+
     public virtual string MacExecutable => null!;
+
     public virtual string LinuxExecutable => null!;
+
     public Process? Process { get; private set; }
 
     public InstanceInfo Info { get; set; }
@@ -55,6 +66,42 @@ public abstract class Instance : IDisposable {
 
     public void Launch() {
         Process = Launcher.Platform.Launch(this);
+    }
+
+    public void AddToSteam() {
+        var steamPath = Launcher.Platform.SteamPath();
+
+        if (!Directory.Exists(steamPath)) {
+            // TODO: handle gracefully
+            throw new Exception("Steam not found");
+        }
+
+        var userdata = new DirectoryInfo(Path.Combine(steamPath, "userdata"));
+        var user = userdata.GetDirectories()[0]; // TODO: support multiple users
+        var shortcutsPath = Path.Combine(user.FullName, "config", "shortcuts.vdf");
+        var shortcuts = VDFParser.VDFParser.Parse(shortcutsPath).ToList();
+        shortcuts.Add(new VDFEntry {
+            AllowDesktopConfig = 1,
+            AllowOverlay = 1,
+            AppName = Info.Name,
+            Devkit = 0,
+            DevkitGameID = "",
+            DevkitOverrideAppID = 0,
+            Exe = Environment.ProcessPath ?? throw new Exception("Process path not found"),
+            FlatpakAppID = "",
+            Icon = IconUtils.GetPath(Info.Icon),
+            Index = shortcuts.Count,
+            IsHidden = 0,
+            LastPlayTime = 0,
+            LaunchOptions = $"run \"{Info.Name}\"",
+            OpenVR = 0,
+            ShortcutPath = "",
+            StartDir = Environment.CurrentDirectory,
+            Tags = Array.Empty<string>(),
+            appid = new Random().Next(int.MinValue, -1),
+        });
+
+        File.WriteAllBytes(shortcutsPath, VDFSerializer.Serialize(shortcuts.ToArray()));
     }
 
     public void Dispose() {

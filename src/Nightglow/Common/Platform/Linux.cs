@@ -38,6 +38,10 @@ public class Linux : IPlatform {
             return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Personal), ".local", "share", "nightglow");
     }
 
+    public string SteamPath() {
+        return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Personal), ".local", "share", "Steam");
+    }
+
     public void DataPathIL(ModuleDefinition md, ILCursor c, string mscorlibPath) {
         var mscorlib = ModuleDefinition.ReadModule(mscorlibPath);
         c.Emit(OpCodes.Call, md.ImportReference(mscorlib.GetTypes().First(t => t.FullName == "System.Environment").GetMethods().First(m => m.Name == "get_CurrentDirectory")));

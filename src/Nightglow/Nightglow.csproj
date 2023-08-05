@@ -14,6 +14,7 @@
         <PackageReference Include="Mono.Cecil" Version="0.11.5" />
         <PackageReference Include="MonoMod.RuntimeDetour" Version="25.0.0" />
         <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+        <PackageReference Include="VDFParser.dotnet" Version="1.1.0" />
     </ItemGroup>
 
     <ItemGroup>

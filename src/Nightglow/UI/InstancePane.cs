@@ -42,6 +42,12 @@ public class InstancePane {
             killButton.CanTarget = false;
         };
         rootBox.Append(killButton);
+        
+        var addToSteamButton = new Button { Name = "addToSteamButton", Label = "Add to Steam" };
+        addToSteamButton.OnClicked += (_, _) => {
+            displayed.Instance.AddToSteam();
+        };
+        rootBox.Append(addToSteamButton);
     }
 
     public void SetParent(Box parent) {

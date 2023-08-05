@@ -13,6 +13,7 @@ public interface IPlatform {
 
     public string CachePath();
     public string DataPath();
+    string SteamPath();
     public void DataPathIL(ModuleDefinition md, ILCursor c, string mscorlibPath);
     public void OpenUrl(string url);
     public void OpenPath(string path);

@@ -21,6 +21,10 @@ public class Windows : IPlatform {
         return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "nightglow");
     }
 
+    public string SteamPath() {
+        return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86), "Steam");
+    }
+
     public void DataPathIL(ModuleDefinition md, ILCursor c, string mscorlibPath) {
         new Linux().DataPathIL(md, c, mscorlibPath);
     }
