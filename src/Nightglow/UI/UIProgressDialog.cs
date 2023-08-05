@@ -16,7 +16,7 @@ public class UIProgressDialog : IProgressDialog {
     private Window dialog = null!;
     private Label headerLabel = null!;
     private Label label = null!;
-    private ProgressBar bar = null!;
+    private ProgressBar? bar;
 
     public UIProgressDialog(Application application, Window parent) { // This is stupid
         disposables = new List<IDisposable>();
@@ -65,7 +65,7 @@ public class UIProgressDialog : IProgressDialog {
     }
 
     public void SetFraction(double fraction) {
-        bar.SetFraction(fraction);
+        bar?.SetFraction(fraction);
     }
 
     public void SetHeader(string header) {
@@ -85,22 +85,21 @@ public class UIProgressDialog : IProgressDialog {
     }
 
     public void Pulse() {
-        bar.Pulse();
+        bar?.Pulse();
     }
 
     public void SetPulseStep(double fraction) {
-        bar.SetPulseStep(fraction);
+        bar?.SetPulseStep(fraction);
     }
 
     public void PulseWhile(int ms, Func<bool> condition) {
-        var pulseTask = Task.Run(() => {
-            while (condition()) {
+        // TODO: Implement cancellation token or something so that this will stop running when PulseWhile is called again or the class is closed or disposed
+        Task.Run(() => {
+            while (condition() && bar != null) {
                 bar?.Pulse();
                 Thread.Sleep(ms);
             }
         });
-
-        disposables.Add(pulseTask);
     }
 
     public void Close() {
@@ -113,6 +112,7 @@ public class UIProgressDialog : IProgressDialog {
         dialog.Dispose();
         headerLabel.Dispose();
         label.Dispose();
-        bar.Dispose();
+        bar?.Dispose();
+        bar = null; // Prevent the task from accessing it again
     }
 }
