@@ -107,6 +107,8 @@ public class UIProgressDialog : IProgressDialog {
     }
 
     public void Dispose() {
+        Close();
+
         DisposableUtils.DisposeList(disposables);
 
         dialog.Dispose();
