@@ -59,7 +59,7 @@ public class TConfigInstance : Instance, ICreateInstance {
         using var resolver = new DefaultAssemblyResolver();
         resolver.AddSearchDirectory(Path.Combine(path, "game"));
         resolver.AddSearchDirectory(Path.Combine(path, Launcher.Platform.NetFxPath));
-        using var md = ModuleDefinition.ReadModule(asmPath, new ReaderParameters { AssemblyResolver = resolver });
+        var md = ModuleDefinition.ReadModule(asmPath, new ReaderParameters { AssemblyResolver = resolver });
         var main = md.GetType("Terraria.Main");
         var mainCctor = main.GetStaticConstructor();
         var il = new ILContext(mainCctor);
@@ -89,8 +89,15 @@ public class TConfigInstance : Instance, ICreateInstance {
                 c.Emit(OpCodes.Ldstr, "");
             }
         }
+        
+        var ms = new MemoryStream();
+        md.Write(ms);
+        md.Dispose();
 
         File.Move(asmPath, asmPath + ".bak");
-        md.Write(asmPath);
+        
+        using var fs = new FileStream(asmPath, FileMode.Create);
+        ms.Position = 0;
+        ms.CopyTo(fs);
     }
 }

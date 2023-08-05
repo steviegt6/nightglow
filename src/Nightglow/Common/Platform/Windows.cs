@@ -42,7 +42,7 @@ public class Windows : IPlatform {
     public Process Launch(Instance instance) {
         var proc = new Process {
             StartInfo = new ProcessStartInfo {
-                FileName = instance.WindowsExecutable,
+                FileName = Path.Combine(Path.Combine(instance.InstancePath, "game"), instance.WindowsExecutable),
                 Arguments = "",
                 WorkingDirectory = Path.Combine(instance.InstancePath, "game"),
                 UseShellExecute = false,
