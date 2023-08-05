@@ -46,7 +46,7 @@ public class Windows : IPlatform {
     public Process Launch(Instance instance) {
         var proc = new Process {
             StartInfo = new ProcessStartInfo {
-                FileName = Path.Combine(Path.Combine(instance.InstancePath, "game"), instance.WindowsExecutable),
+                FileName = Path.Combine(instance.InstancePath, "game", instance.WindowsExecutable),
                 Arguments = "",
                 WorkingDirectory = Path.Combine(instance.InstancePath, "game"),
                 UseShellExecute = false,
