@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using Gtk;
 using Nightglow.Common;
 using Nightglow.Common.Dialogs;
@@ -20,14 +19,27 @@ public class UILauncher : Launcher {
         MainWindow = window;
     }
 
-    public override IConfirmationDialog NewConfirmationDialog(string title, string text, IEnumerable<DialogOption> opts) {
-        // This will eventually need to be modeled after NewProgressDialog
-        var dialog = new UIConfirmationDialog(Application, MainWindow);
-        dialog.Initialize(title, text, opts);
-        return (IConfirmationDialog)dialog;
+    public override IConfirmationDialog NewConfirmationDialog(string title, string text, params DialogOption<IConfirmationDialog>[] opts) {
+        IConfirmationDialog? dialog = null;
+
+       if (Environment.CurrentManagedThreadId != 1) {
+            ExecuteInMainContext(() => {
+                dialog = new UIConfirmationDialog(Application, MainWindow);
+                dialog.Initialize(title, text, opts);
+            });
+
+            if (dialog == null)
+                throw new Exception();
+        }
+        else {
+            dialog = new UIConfirmationDialog(Application, MainWindow);
+            dialog.Initialize(title, text, opts);
+        }
+
+        return dialog;
     }
 
-    public override IProgressDialog NewProgressDialog(string title, string header, string text, IEnumerable<DialogOption> opts) {
+    public override IProgressDialog NewProgressDialog(string title, string header, string text, params DialogOption<IProgressDialog>[] opts) {
         IProgressDialog? dialog = null;
 
         if (Environment.CurrentManagedThreadId != 1) {
@@ -36,9 +48,8 @@ public class UILauncher : Launcher {
                 dialog.Initialize(title, header, text, opts);
             });
 
-            if (dialog == null) {
+            if (dialog == null)
                 throw new Exception();
-            }
         }
         else {
             dialog = new UIProgressDialog(Application, MainWindow);

@@ -72,7 +72,7 @@ public class Linux : IPlatform {
                 }
             };
 
-            var cancelOpt = new DialogOption("Cancel", "Kills the winetricks installer, removing leftover files", (sender) => {
+            var cancelOpt = new DialogOption<IProgressDialog>("Cancel", "Kills the winetricks installer, removing leftover files", (sender) => {
                 sender.SetHeader("Undoing winetricks setup");
                 sender.SetText("Killing winetricks");
                 if (!proc.HasExited)
@@ -87,7 +87,7 @@ public class Linux : IPlatform {
                 closedAndDisposed = true;
             });
 
-            var dialog = Program.Launcher.NewProgressDialog("Performing first time wine setup", "Wine setup", "Installing xna40", new DialogOption[] { cancelOpt });
+            var dialog = Program.Launcher.NewProgressDialog("Performing first time wine setup", "Wine setup", "Installing xna40", cancelOpt);
 
             void DataRecieved(object sender, DataReceivedEventArgs args) {
                 if (!string.IsNullOrEmpty(args.Data))

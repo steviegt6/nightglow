@@ -25,13 +25,13 @@ public class TConfigInstance : Instance, ICreateInstance {
         var path = DeterminePath(name);
         Directory.CreateDirectory(path);
 
-        var dialog = Program.Launcher.NewProgressDialog("Creating instance " + name, "Creating instance " + name, "", new DialogOption[] { });
+        var dialog = Program.Launcher.NewProgressDialog("Creating instance " + name, "Creating instance " + name, "", new DialogOption<IProgressDialog>("Cancel", null, null)); // TODO: Actually cancel lol
 
         var archivePath = Path.Combine(path, "tConfig.zip");
         await Downloader.Download("https://ppeb.me/nightglow/tConfig.zip", archivePath, (tB, tBR, perc) => {
             dialog.SetText($"Downloading tConfig.zip: {tBR} bytes/{tB} bytes");
             dialog.SetFraction(perc ?? 0);
-            return false; // Should be some kind of CancellationToken thing
+            return false; // TODO: Should be some kind of CancellationToken thing
         });
 
         dialog.PulseWhile(100, () => { return true; });
@@ -52,6 +52,7 @@ public class TConfigInstance : Instance, ICreateInstance {
         dialog.SetText("Patching assembly tConfig.exe");
         ModifyAssembly(path);
         dialog.Close();
+        dialog.Dispose();
 
         return instance;
     }

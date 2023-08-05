@@ -24,7 +24,7 @@ public class UIProgressDialog : IProgressDialog {
         _parent = parent;
     }
 
-    public void Initialize(string title, string header, string text, IEnumerable<DialogOption> opts) {
+    public void Initialize(string title, string header, string text, params DialogOption<IProgressDialog>[] opts) {
         dialog = new Window { Title = title, Application = _application, Modal = true };
 
         var rootBox = new Box { Name = "ProgressDialog rootBox" };
@@ -50,10 +50,12 @@ public class UIProgressDialog : IProgressDialog {
         footerBox.SetHalign(Align.End);
         rootBox.Append(footerBox);
 
-        foreach (DialogOption opt in opts) {
+        foreach (DialogOption<IProgressDialog> opt in opts) {
             var button = new Button { Label = opt.Label };
             disposables.Add(button);
-            button.OnClicked += (_, _) => opt.OnAccept(this);
+            button.TooltipText = opt.ToolTip;
+            if (opt.OnAccept != null)
+                button.OnClicked += (_, _) => opt.OnAccept(this);
             footerBox.Append(button);
         }
 

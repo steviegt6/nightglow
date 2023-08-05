@@ -43,7 +43,6 @@ public class AddInstanceWindow : ApplicationWindow, IDisposable {
 
     public AddInstanceWindow(Gio.Application application, InstancePane pane, FlowBox flow) {
         disposables = new List<IDisposable>();
-        this.OnCloseRequest += (_, _) => { this.Dispose(); return false; };
         this.pane = pane;
         this.flow = flow;
 
@@ -121,7 +120,7 @@ public class AddInstanceWindow : ApplicationWindow, IDisposable {
         footerBox.Append(okButton);
         var cancelButton = new Button { Label = "Cancel" };
         disposables.Add(cancelButton);
-        cancelButton.OnClicked += (_, _) => { this.Close(); };
+        cancelButton.OnClicked += (_, _) => { this.Close(); this.Dispose(); };
         footerBox.Append(cancelButton);
         rootBox.Append(footerBox);
 
@@ -174,6 +173,7 @@ public class AddInstanceWindow : ApplicationWindow, IDisposable {
             flow.Append(uiInstance); // Eventually needs to be sorted
 
             this.Close();
+            this.Dispose();
         });
 
         disposables.Add(task);

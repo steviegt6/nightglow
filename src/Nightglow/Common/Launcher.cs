@@ -83,9 +83,9 @@ public abstract class Launcher {
             Task.Factory.StartNew(action);
     }
 
-    public abstract IConfirmationDialog NewConfirmationDialog(string title, string text, IEnumerable<DialogOption> opts);
+    public abstract IConfirmationDialog NewConfirmationDialog(string title, string text, params DialogOption<IConfirmationDialog>[] opts);
 
-    public abstract IProgressDialog NewProgressDialog(string title, string header, string text, IEnumerable<DialogOption> opts);
+    public abstract IProgressDialog NewProgressDialog(string title, string header, string text, params DialogOption<IProgressDialog>[] opts);
 
     private static IPlatform GetPlatform() {
         if (OperatingSystem.IsWindows())

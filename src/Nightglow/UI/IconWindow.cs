@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using Gtk;
 using Nightglow.Common;
+using Nightglow.Common.Dialogs;
 
 namespace Nightglow.UI;
 
@@ -214,7 +215,10 @@ public class IconWindow : ApplicationWindow, IDisposable {
                 var name = Path.GetFileName(path);
                 var newPath = Path.Combine(Launcher.IconsPath, name);
                 if (File.Exists(newPath)) {
-                    // TODO: Use confirmation dialog
+                    var existsDialog = Program.Launcher.NewConfirmationDialog("Icon already exists - Nightglow", $"Icon {name} already exists.", new DialogOption<IConfirmationDialog>("Ok", null, (sender) => {
+                        sender.Close();
+                        sender.Dispose();
+                    }));
                     return;
                 }
 
