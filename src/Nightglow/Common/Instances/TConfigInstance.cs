@@ -7,6 +7,7 @@ using Mono.Cecil;
 using Mono.Cecil.Cil;
 using Mono.Cecil.Rocks;
 using MonoMod.Cil;
+using MonoMod.Utils;
 using Nightglow.Common.Dialogs;
 
 namespace Nightglow.Common.Instances;
@@ -65,27 +66,18 @@ public class TConfigInstance : Instance, ICreateInstance {
         var il = new ILContext(mainCctor);
         var c = new ILCursor(il);
 
-        if (!c.TryGotoNext(MoveType.Before,
-            i => i.MatchLdcI4(5),
-            i => i.MatchNewarr<object>(),
-            i => i.MatchStloc(1),
-            i => i.MatchLdloc(1),
-            i => i.MatchLdcI4(0)
-        ))
-            throw new Exception("Unable to patch tConfig.exe");
-        else {
-            c.RemoveRange(28);
-            Launcher.Platform.DataPathIL(md, c, Path.Combine(Launcher.Platform.NetFxPath, "mscorlib.dll"));
-        }
+        c.GotoNext(MoveType.Before, x => x.MatchStsfld(main.FindField("SavePath")!));
+        c.Emit(OpCodes.Pop);
+        Launcher.Platform.DataPathIL(md, c, Path.Combine(Launcher.Platform.NetFxPath, "mscorlib.dll"));
 
         // tConfig makes its paths by string.join-ing an array, just set the tConfig part empty so it doesn't make any subdirectories
         for (int i = 0; i < 2; i++) {
-            if (!c.TryGotoNext(MoveType.Before,
+            if (!c.TryGotoNext(MoveType.After,
                 i => i.MatchLdstr("tConfig")
             ))
                 throw new Exception("Unable to patch tConfig.exe");
             else {
-                c.Remove();
+                c.Emit(OpCodes.Pop);
                 c.Emit(OpCodes.Ldstr, "");
             }
         }
