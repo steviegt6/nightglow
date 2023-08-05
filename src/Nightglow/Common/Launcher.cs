@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading;
@@ -27,6 +27,7 @@ public abstract class Launcher {
         Directory.CreateDirectory(Platform.DataPath());
         Directory.CreateDirectory(InstancesPath);
         Directory.CreateDirectory(IconsPath);
+        IconUtils.LoadEmbeddedIcons();
 
         Instances = new List<Instance>();
 
