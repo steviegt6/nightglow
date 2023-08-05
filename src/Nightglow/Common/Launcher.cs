@@ -89,7 +89,7 @@ public abstract class Launcher {
 
     private static IPlatform GetPlatform() {
         if (OperatingSystem.IsWindows())
-            throw new PlatformNotSupportedException("Unknown or unsupported platform!");
+            return new Windows();
         else if (OperatingSystem.IsMacOS())
             throw new PlatformNotSupportedException("Unknown or unsupported platform!");
         else if (OperatingSystem.IsLinux())
