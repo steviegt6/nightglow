@@ -51,7 +51,7 @@ public class Linux : IPlatform {
 
     private void SetWineEnv(string path) {
         Environment.SetEnvironmentVariable("WINEPREFIX", path);
-        Environment.SetEnvironmentVariable("WINEARCH", "win64");
+        Environment.SetEnvironmentVariable("WINEARCH", "win32");
     }
 
     public async Task ConfigureInstance(Instance instance) {
@@ -102,7 +102,7 @@ public class Linux : IPlatform {
             proc.BeginErrorReadLine();
 
             dialog.PulseWhile(100, () => {
-                return !proc.HasExited;
+                return proc != null ? !proc.HasExited : false;
             });
 
             await proc.WaitForExitAsync();
