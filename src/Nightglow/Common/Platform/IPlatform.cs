@@ -1,4 +1,4 @@
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using System.Threading.Tasks;
 using Mono.Cecil;
 using MonoMod.Cil;
@@ -11,12 +11,19 @@ public interface IPlatform {
 
     string NetCorePath { get; }
 
-    public string CachePath();
-    public string DataPath();
+    string CachePath();
+
+    string DataPath();
+
     string SteamPath();
-    public void DataPathIL(ModuleDefinition md, ILCursor c, string mscorlibPath);
-    public void OpenUrl(string url);
-    public void OpenPath(string path);
-    public Task ConfigureInstance(Instance instance);
-    public Process Launch(Instance instance);
+
+    void DataPathIL(ModuleDefinition md, ILCursor c, string mscorlibPath);
+
+    void OpenUrl(string url);
+
+    void OpenPath(string path);
+
+    Task ConfigureInstance(Instance instance);
+
+    Process Launch(Instance instance);
 }
