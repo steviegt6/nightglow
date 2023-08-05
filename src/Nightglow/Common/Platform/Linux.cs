@@ -16,6 +16,10 @@ namespace Nightglow.Common.Platform;
 public class Linux : IPlatform {
     private string winePath => Path.Combine(DataPath(), "wine");
 
+    public string NetFxPath => Path.Combine(Launcher.Platform.DataPath(), "wine", "drive_c", "windows", "Microsoft.NET", "Framework", "v4.0.30319");
+
+    public string NetCorePath => throw new NotImplementedException(".NET Core path resolution not yet implemented on Linux.");
+
     public string CachePath() {
         var xdg = Environment.GetEnvironmentVariable("XDG_CACHE_HOME");
 

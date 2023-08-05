@@ -9,6 +9,10 @@ using Nightglow.Common.Instances;
 namespace Nightglow.Common.Platform;
 
 public class Windows : IPlatform {
+    public string NetFxPath => @"C:\Windows\Microsoft.NET\Framework\v4.0.30319";
+
+    public string NetCorePath => throw new NotImplementedException(".NET Core path resolution not yet implemented on Linux.");
+
     public string CachePath() {
         return Path.Combine(DataPath(), "cache");
     }

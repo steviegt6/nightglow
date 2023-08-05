@@ -16,7 +16,6 @@ public class TConfigInstance : Instance, ICreateInstance {
     public override bool WindowsOnly => true;
     public override string WindowsExecutable => "tConfig.exe";
     public static string DefaultIcon => "Nightglow.Assets.Icons.tConfig.png";
-    public static string NetPath => Path.Combine(Launcher.Platform.DataPath(), "wine", "drive_c", "windows", "Microsoft.NET", "Framework", "v4.0.30319");
 
     public TConfigInstance(string path, InstanceInfo info) : base(path, info) { }
 
@@ -61,7 +60,7 @@ public class TConfigInstance : Instance, ICreateInstance {
         var asmPath = Path.Combine(path, "game", "tConfig.exe");
         using var resolver = new DefaultAssemblyResolver();
         resolver.AddSearchDirectory(Path.Combine(path, "game"));
-        resolver.AddSearchDirectory(Path.Combine(path, NetPath));
+        resolver.AddSearchDirectory(Path.Combine(path, Launcher.Platform.NetFxPath));
         using var md = ModuleDefinition.ReadModule(asmPath, new ReaderParameters { AssemblyResolver = resolver });
         var main = md.GetType("Terraria.Main");
         var mainCctor = main.GetStaticConstructor();
@@ -78,7 +77,7 @@ public class TConfigInstance : Instance, ICreateInstance {
             throw new Exception("Unable to patch tConfig.exe");
         else {
             c.RemoveRange(28);
-            Launcher.Platform.DataPathIL(md, c, Path.Combine(NetPath, "mscorlib.dll"));
+            Launcher.Platform.DataPathIL(md, c, Path.Combine(Launcher.Platform.NetFxPath, "mscorlib.dll"));
         }
 
         // tConfig makes its paths by string.join-ing an array, just set the tConfig part empty so it doesn't make any subdirectories

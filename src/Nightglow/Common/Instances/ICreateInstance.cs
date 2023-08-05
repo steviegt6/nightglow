@@ -6,6 +6,5 @@ namespace Nightglow.Common.Instances;
 [RequiresPreviewFeatures]
 public interface ICreateInstance {
     public static abstract string DefaultIcon { get; }
-    public static abstract string NetPath { get; }
     public static abstract Task<Instance> Create(string name, string? icon);
 }
