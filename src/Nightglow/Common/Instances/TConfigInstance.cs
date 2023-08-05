@@ -81,7 +81,12 @@ public class TConfigInstance : Instance, ICreateInstance {
                 c.Emit(OpCodes.Ldstr, "");
             }
         }
-        
+
+        var steam = md.GetType("Terraria.Steam");
+        var kill = steam.FindMethod("Kill")!;
+        kill.Body.Instructions.Clear();
+        kill.Body.Instructions.Add(Instruction.Create(OpCodes.Ret));
+
         var ms = new MemoryStream();
         md.Write(ms);
         md.Dispose();
