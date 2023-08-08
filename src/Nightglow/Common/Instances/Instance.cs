@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -36,7 +36,7 @@ public abstract class Instance : IDisposable {
 
     public virtual string LinuxExecutable => null!;
 
-    public Process? Process { get; private set; }
+    public Process? Process { get; set; }
 
     public InstanceInfo Info { get; set; }
 

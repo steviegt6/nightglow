@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.IO;
 using System.IO.Compression;
 using System.Runtime.Versioning;
@@ -92,7 +92,7 @@ public class TConfigInstance : Instance, ICreateInstance {
         md.Dispose();
 
         File.Move(asmPath, asmPath + ".bak");
-        
+
         using var fs = new FileStream(asmPath, FileMode.Create);
         ms.Position = 0;
         ms.CopyTo(fs);

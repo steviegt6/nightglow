@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -142,6 +142,7 @@ public class Linux : IPlatform {
         proc.ErrorDataReceived += (sender, args) => { Console.WriteLine("err: " + args.Data); };
 
         proc.Start();
+        proc.EnableRaisingEvents = true;
         proc.BeginOutputReadLine();
         proc.BeginErrorReadLine();
 
