@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -23,8 +23,7 @@ public class AddInstanceWindow : ApplicationWindow, IDisposable {
     private Entry nameEntry;
     private Entry groupEntry;
 
-    private InstancePane pane;
-    private FlowBox flow;
+    private readonly Action<Instance> _callback;
 
     private void SelectCreator(Type type, string label) {
         if (!nonDefaultIconSelected)
@@ -41,10 +40,14 @@ public class AddInstanceWindow : ApplicationWindow, IDisposable {
         visibleBox = label;
     }
 
-    public AddInstanceWindow(Gio.Application application, InstancePane pane, FlowBox flow) {
+    public AddInstanceWindow(Application application, Window parent, Action<Instance> callback) {
         disposables = new List<IDisposable>();
-        this.pane = pane;
-        this.flow = flow;
+        _callback = callback;
+
+        this.Application = application;
+        this.Title = "New Instance - Nightglow";
+        this.SetDefaultSize(800, 600);
+        this.SetTransientFor(parent);
 
         var rootBox = new Box { Name = "rootBox" };
         disposables.Add(rootBox);
@@ -151,10 +154,6 @@ public class AddInstanceWindow : ApplicationWindow, IDisposable {
         }
 
         SelectCreator(createInstanceTypes.Values.First(), createInstanceTypes.Keys.First());
-
-        this.Application = (Application)application;
-        this.Title = "New Instance - Nightglow";
-        this.SetDefaultSize(800, 600);
     }
 
     private void CreateSelectedInstance(Button sender, EventArgs args) {
@@ -167,10 +166,8 @@ public class AddInstanceWindow : ApplicationWindow, IDisposable {
             var instance = await (Task<Instance>)createInstanceTypes[visibleBox]
                 .GetMethod("Create", BindingFlags.Public | BindingFlags.Static)!
                 .Invoke(null, new object[] { nameEntry.GetText(), iconToUse! })!;
-            Program.Launcher.Instances.Add(instance);
-            var uiInstance = new UIInstance(instance, pane);
-            pane.SetInstance(uiInstance);
-            flow.Append(uiInstance); // Eventually needs to be sorted
+
+            _callback(instance);
 
             this.Close();
             this.Dispose();

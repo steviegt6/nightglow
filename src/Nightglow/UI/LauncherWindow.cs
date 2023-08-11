@@ -1,5 +1,4 @@
-using System;
-using Gtk;
+﻿using Gtk;
 using Nightglow.Common;
 
 namespace Nightglow.UI;
@@ -17,9 +16,13 @@ public class LauncherWindow : ApplicationWindow {
         var ribbonBox = new Box { Name = "ribbonBox" };
         ribbonBox.SetOrientation(Orientation.Horizontal);
         var addInstanceButton = new Button { Label = "Add Instance" };
-        addInstanceButton.OnClicked += (Button _, EventArgs _) => {
-            var addInstanceWindow = new AddInstanceWindow(application, instancePane, instanceFlow);
-            addInstanceWindow.SetTransientFor(this);
+        addInstanceButton.OnClicked += (_, _) => {
+            var addInstanceWindow = new AddInstanceWindow(application, this, (instance) => {
+                Program.Launcher.Instances.Add(instance);
+                var uiInstance = new UIInstance(instance, instancePane);
+                instanceFlow.Append(uiInstance);
+                instancePane.SetInstance(uiInstance);
+            });
             addInstanceWindow.Show();
         };
         ribbonBox.Append(addInstanceButton);
@@ -33,7 +36,6 @@ public class LauncherWindow : ApplicationWindow {
         rootBox.Append(ribbonBox);
 
         centerBox.SetOrientation(Orientation.Horizontal);
-
         centerBox.Append(instanceFlow);
 
         instanceFlow.SetValign(Gtk.Align.Fill);

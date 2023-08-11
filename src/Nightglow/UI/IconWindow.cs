@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -54,10 +54,10 @@ public class IconWindow : ApplicationWindow, IDisposable {
             list.Append(item);
     }
 
-    public IconWindow(Gio.Application application, Window parent, string? selected, Action<string> callback) {
+    public IconWindow(Application application, Window parent, string? selected, Action<string> callback) {
         disposables = new List<IDisposable>();
 
-        this.Application = (Application)application;
+        this.Application = application;
         this.Title = "Select Icon - Nightglow";
         this.SetDefaultSize(800, 800);
         this.SetTransientFor(parent);
