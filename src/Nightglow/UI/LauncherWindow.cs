@@ -5,6 +5,10 @@ namespace Nightglow.UI;
 
 public class LauncherWindow : ApplicationWindow {
     public LauncherWindow(Application application) {
+        this.Application = application;
+        this.Title = "Nightglow";
+        this.SetDefaultSize(800, 600);
+
         var rootBox = new Box { Name = "rootBox" };
         rootBox.SetOrientation(Orientation.Vertical);
         this.SetChild(rootBox);
@@ -50,9 +54,5 @@ public class LauncherWindow : ApplicationWindow {
         if (uiInstance != null)
             instancePane.SetInstance((UIInstance)uiInstance);
         rootBox.Append(centerBox);
-
-        this.Application = application;
-        this.Title = "Nightglow";
-        this.SetDefaultSize(800, 600);
     }
 }
