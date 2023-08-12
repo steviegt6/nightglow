@@ -158,11 +158,8 @@ public class IconWindow : ApplicationWindow, IDisposable {
             if (button != null)
                 button.OnClicked -= onClicked;
 
-            if (image != null)
-                image.Clear();
-
-            if (label != null)
-                label.SetText("");
+            image?.Clear();
+            label?.SetText("");
         };
         factory.OnTeardown += (factory, args) => {
             var item = (ListItem)args.Object;
@@ -171,17 +168,10 @@ public class IconWindow : ApplicationWindow, IDisposable {
             var image = (Image?)box?.GetFirstChild();
             var label = (Label?)box?.GetLastChild();
 
-            if (box != null)
-                box.Dispose();
-
-            if (image != null)
-                image.Dispose();
-
-            if (button != null)
-                button.Dispose();
-
-            if (label != null)
-                label.Dispose();
+            image?.Dispose();
+            label?.Dispose();
+            box?.Dispose();
+            button?.Dispose();
         };
         view.SetFactory(factory);
         scrolled.SetChild(view);

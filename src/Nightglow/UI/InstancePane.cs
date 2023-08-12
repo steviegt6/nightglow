@@ -1,10 +1,15 @@
 ﻿using System;
 using Gtk;
+using Nightglow.Common;
+using Nightglow.Common.Instances;
 
 namespace Nightglow.UI;
 
 public class InstancePane {
-    private UIInstance displayed = null!; // Unfortunately, this can't be set in the ctor for reasons
+    private Instance displayed = null!; // Unfortunately, this can't be set in the ctor for reasons
+    private Button displayedButton = null!;
+    private Image? displayedImage => (Image?)displayedButton?.GetChild()?.GetFirstChild();
+    private Entry? displayedEntry => (Entry?)displayedButton?.GetChild()?.GetLastChild();
     private IconButton iconButton; // Temporary, can replace with an actual type eventually, also used in AddInstanceWindow
     private Button nameButton;
     private Button killButton;
@@ -17,14 +22,15 @@ public class InstancePane {
         rootBox.SetOrientation(Orientation.Vertical);
 
         iconButton = new IconButton(application, parent, null, 64, (icon) => {
-            displayed.Instance.Info.Icon = icon;
-            displayed.Instance.Save();
+            displayed.Info.Icon = icon;
+            displayed.Save();
+            displayedImage?.SetFromFile(IconUtils.GetPath(icon));
         });
         rootBox.Append(iconButton);
 
         nameButton = new Button { Name = "nameButton" };
         nameButton.OnClicked += (_, _) => {
-            displayed.NameEntry.GrabFocus();
+            displayedEntry?.GrabFocus();
         };
         rootBox.Append(nameButton);
 
@@ -38,19 +44,19 @@ public class InstancePane {
         };
 
         launchButton.OnClicked += (_, _) => {
-            displayed.Instance.Launch();
-            displayed.Instance.Process!.Exited += onExit;
+            displayed.Launch();
+            displayed.Process!.Exited += onExit;
             killButton.Sensitive = true;
             launchButton.Sensitive = false;
         };
         rootBox.Append(launchButton);
 
         killButton.OnClicked += (_, _) => {
-            if (displayed.Instance.Process != null) {
-                displayed.Instance.Process.Kill(true);
-                displayed.Instance.Process.Dispose();
+            if (displayed.Process != null) {
+                displayed.Process.Kill(true);
+                displayed.Process.Dispose();
                 // Null this out to prevent exceptions from trying to access properties on it later
-                displayed.Instance.Process = null;
+                displayed.Process = null;
             }
 
             killButton.Sensitive = false;
@@ -60,7 +66,7 @@ public class InstancePane {
 
         var addToSteamButton = new Button { Name = "addToSteamButton", Label = "Add to Steam" };
         addToSteamButton.OnClicked += (_, _) => {
-            displayed.Instance.AddToSteam();
+            displayed.AddToSteam();
         };
         rootBox.Append(addToSteamButton);
     }
@@ -69,15 +75,15 @@ public class InstancePane {
         parent.Append(rootBox);
     }
 
-    public void SetInstance(UIInstance uiInstance) {
-        if (displayed == uiInstance)
+    public void SetInstance(Instance instance, Button button) {
+        if (displayed == instance)
             return;
 
-        if (displayed != null && displayed.Instance.Process != null)
-            displayed.Instance.Process.Exited -= onExit; // It is legal to remove an event handler that doesn't exist, so just always remove it
+        if (displayed != null && displayed.Process != null)
+            displayed.Process.Exited -= onExit; // It is legal to remove an event handler that doesn't exist, so just always remove it
 
-        if (uiInstance.Instance.Process != null && !uiInstance.Instance.Process.HasExited) {
-            uiInstance.Instance.Process.Exited += onExit;
+        if (instance.Process != null && !instance.Process.HasExited) {
+            instance.Process.Exited += onExit;
             killButton.Sensitive = true;
             launchButton.Sensitive = false;
         }
@@ -85,9 +91,18 @@ public class InstancePane {
             killButton.Sensitive = false;
             launchButton.Sensitive = true;
         }
-        displayed = uiInstance;
-        nameButton.Label = uiInstance.Instance.Info.Name;
 
-        iconButton.SetIcon(uiInstance.Instance.Info.Icon);
+        displayed = instance;
+        displayedButton = button;
+        nameButton.Label = instance.Info.Name;
+        iconButton.SetIcon(instance.Info.Icon);
+    }
+
+    /// <summary>
+    /// Force the window to reflect changes to the instance it's currently displaying
+    /// </summary>
+    public void Refresh() {
+        nameButton.Label = displayed.Info.Name;
+        iconButton.SetIcon(displayed.Info.Icon);
     }
 }
